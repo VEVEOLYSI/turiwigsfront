@@ -1,0 +1,54 @@
+'use client';
+
+import { cn } from '@/utils/cn';
+import type { InputHTMLAttributes } from 'react';
+
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
+  hint?: string;
+}
+
+export function Input({ label, error, hint, className, id, ...props }: InputProps) {
+  const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {label && (
+        <label htmlFor={inputId} className="text-sm font-medium" style={{ color: '#143d2a' }}>
+          {label}
+        </label>
+      )}
+      <input
+        id={inputId}
+        {...props}
+        className={cn(
+          'h-11 w-full rounded-xl px-4 text-sm text-neutral-900 outline-none transition-all duration-150',
+          'placeholder:text-neutral-400',
+          error ? 'border-red-400' : '',
+          className
+        )}
+        style={{
+          background: '#faf6ed',
+          border: `1px solid ${error ? '#f87171' : '#e0d0b0'}`,
+          boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.10), inset 0 1px 2px rgba(0,0,0,0.07)',
+          ...props.style,
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.background = '#ffffff';
+          e.currentTarget.style.border = '1px solid #c9a227';
+          e.currentTarget.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.08), 0 0 0 3px rgba(201,162,39,0.15)';
+          props.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.background = '#faf6ed';
+          e.currentTarget.style.border = `1px solid ${error ? '#f87171' : '#e0d0b0'}`;
+          e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.10), inset 0 1px 2px rgba(0,0,0,0.07)';
+          props.onBlur?.(e);
+        }}
+      />
+      {error && <p className="text-xs text-red-500">{error}</p>}
+      {hint && !error && <p className="text-xs" style={{ color: '#6b7280' }}>{hint}</p>}
+    </div>
+  );
+}

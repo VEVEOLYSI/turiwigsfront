@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+/* ─── Design tokens ──────────────────────────────────────────────────────── */
+:root {
+  --background: #faf6ed;
+  --foreground: #1a1208;
+
+  /* Salon palette */
+  --salon-dark:  #0a2e1f;
+  --salon-mid:   #143d2a;
+  --salon-light: #1e5038;
+
+  /* Gold palette */
+  --gold:        #c9a227;
+  --gold-light:  #e8c84a;
+  --gold-dark:   #8b6914;
+  --gold-shine:  #f0d878;
+
+  /* Cream palette */
+  --cream:       #faf6ed;
+  --cream-dark:  #f0e6cd;
+  --cream-mid:   #e8d8b8;
+
+  /* Skeuomorphic shadows */
+  --shadow-raised:
+    0 1px 0 rgba(255,255,255,0.8) inset,
+    0 8px 24px rgba(0,0,0,0.12),
+    0 2px 6px rgba(0,0,0,0.08);
+
+  --shadow-card:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 4px 16px rgba(0,0,0,0.10),
+    0 1px 4px rgba(0,0,0,0.08),
+    0 0 0 1px rgba(201,162,39,0.08);
+
+  --shadow-gold-btn:
+    0 1px 0 rgba(255,255,255,0.45) inset,
+    0 -1px 0 rgba(0,0,0,0.25) inset,
+    0 4px 12px rgba(139,105,20,0.45),
+    0 1px 3px rgba(0,0,0,0.25);
+
+  --shadow-inset:
+    inset 0 2px 5px rgba(0,0,0,0.18),
+    inset 0 1px 2px rgba(0,0,0,0.12);
+}
+
+/* ─── Tailwind v4 custom colors ──────────────────────────────────────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+
+  --color-salon-dark:  var(--salon-dark);
+  --color-salon-mid:   var(--salon-mid);
+  --color-salon-light: var(--salon-light);
+  --color-gold:        var(--gold);
+  --color-gold-light:  var(--gold-light);
+  --color-gold-dark:   var(--gold-dark);
+  --color-gold-shine:  var(--gold-shine);
+  --color-cream:       var(--cream);
+  --color-cream-dark:  var(--cream-dark);
+  --color-cream-mid:   var(--cream-mid);
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+body {
+  background: var(--cream);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Metallic gold button ───────────────────────────────────────────────── */
+.btn-gold {
+  background: linear-gradient(180deg,
+    var(--gold-shine) 0%,
+    var(--gold)       35%,
+    #a07818           65%,
+    var(--gold)       100%
+  );
+  border: 1px solid var(--gold-dark);
+  box-shadow: var(--shadow-gold-btn);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  color: #1a0e00;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: filter 0.15s, transform 0.1s, box-shadow 0.1s;
+}
+.btn-gold:hover  { filter: brightness(1.08); }
+.btn-gold:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(139,105,20,0.35), inset 0 1px 3px rgba(0,0,0,0.25);
+}
+
+/* ─── Skeuomorphic card ──────────────────────────────────────────────────── */
+.card-sku {
+  background: #ffffff;
+  border: 1px solid rgba(201,162,39,0.18);
+  box-shadow: var(--shadow-card);
+  border-radius: 1rem;
+}
+.card-sku:hover {
+  border-color: rgba(201,162,39,0.45);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 8px 32px rgba(0,0,0,0.14),
+    0 2px 6px rgba(0,0,0,0.10),
+    0 0 0 1px rgba(201,162,39,0.25);
+}
+
+/* ─── Recessed input ─────────────────────────────────────────────────────── */
+.input-sku {
+  background: var(--cream);
+  border: 1px solid var(--cream-mid);
+  box-shadow: var(--shadow-inset);
+}
+.input-sku:focus {
+  background: #ffffff;
+  border-color: var(--gold);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.1),
+    0 0 0 3px rgba(201,162,39,0.18);
+  outline: none;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ─── Gold divider ───────────────────────────────────────────────────────── */
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.5;
+}
+
+/* ─── Glass panel ────────────────────────────────────────────────────────── */
+.glass-dark {
+  background: rgba(10,46,31,0.85);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(201,162,39,0.2);
+}
+
+html { scroll-behavior: smooth; }
