@@ -172,12 +172,12 @@ export default function ProductDetailPage() {
         </div>
 
         {/* ── Details ── */}
-        <div className="flex flex-col gap-6">
-          <div>
+        <div className="flex flex-col gap-6 items-center text-center lg:items-start lg:text-left">
+          <div className="w-full">
             <h1 className="text-2xl font-bold text-neutral-900 sm:text-3xl">{product.name}</h1>
 
             {product.avg_rating !== undefined && Number(product.avg_rating) > 0 && (
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center justify-center lg:justify-start gap-2">
                 <StarRating value={Math.round(Number(product.avg_rating))} size="sm" />
                 <span className="text-sm text-neutral-500">
                   {Number(product.avg_rating).toFixed(1)} ({product.review_count} review{product.review_count !== 1 ? 's' : ''})
@@ -185,7 +185,7 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            <div className="mt-4 flex items-baseline gap-3">
+            <div className="mt-4 flex items-baseline justify-center lg:justify-start gap-3">
               <span className="text-2xl font-bold text-neutral-900">{formatPrice(effectivePrice)}</span>
               {hasDiscount && (
                 <span className="text-base text-neutral-400 line-through">{formatPrice(product.compare_at_price!)}</span>
@@ -195,9 +195,9 @@ export default function ProductDetailPage() {
 
           {/* Variants */}
           {Object.entries(variantGroups).map(([field, options]) => (
-            <div key={field}>
+            <div key={field} className="w-full">
               <p className="mb-2 text-sm font-medium text-neutral-700 capitalize">{field.replace('_', ' ')}</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap justify-center lg:justify-start gap-2">
                 {options.map((opt) => {
                   const variant = product.variants.find((v) => (v as unknown as Record<string, unknown>)[field] === opt);
                   const active = selectedVariant?.id === variant?.id;
@@ -221,9 +221,9 @@ export default function ProductDetailPage() {
           ))}
 
           {/* Quantity */}
-          <div>
+          <div className="w-full">
             <p className="mb-2 text-sm font-medium text-neutral-700">Quantity</p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center lg:justify-start gap-3">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-lg font-medium hover:border-neutral-400 transition-colors"

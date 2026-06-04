@@ -5,15 +5,13 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
-import { ordersApi } from '@/api/orders.api';
 import { usersApi } from '@/api/users.api';
 import { formatPrice } from '@/utils/formatters';
 import { PayButton } from '@/components/payments/PayButton';
 import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
 import { PageSpinner } from '@/components/ui/Spinner';
-import toast from 'react-hot-toast';
 import type { Address } from '@/types';
+import type { CheckoutData } from '@/api/payments.api';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -24,11 +22,9 @@ export default function CheckoutPage() {
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [discountCode, setDiscountCode] = useState('');
   const [notes, setNotes] = useState('');
-  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
-  const [creatingOrder, setCreatingOrder] = useState(false);
 
   const items = cart?.items ?? [];
-  const shipping = 0; // free shipping for now
+  const shipping = 0;
   const grandTotal = total + shipping;
 
   useEffect(() => {
@@ -45,42 +41,30 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated]);
 
-  const handleCreateOrder = async () => {
-    if (!items.length) return;
-    setCreatingOrder(true);
-    try {
-      const orderItems = items
-        .filter((i) => i.products)
-        .map((i) => ({
-          productId: i.products!.id,
-          variantId: i.variant_id,
-          quantity: i.quantity,
-        }));
-
-      const { data } = await ordersApi.create({
-        addressId: selectedAddress ?? undefined,
-        discountCode: discountCode || undefined,
-        shippingAmount: shipping,
-        notes: notes || undefined,
-        idempotencyKey: crypto.randomUUID(),
-        items: orderItems,
-      });
-
-      setCreatedOrderId(data.data.id);
-      toast.success('Order created! Complete payment below.');
-    } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Order creation failed';
-      toast.error(msg);
-    } finally {
-      setCreatingOrder(false);
-    }
-  };
+  useEffect(() => {
+    if (!authLoading && user && !items.length) router.push('/cart');
+  }, [authLoading, user, items.length, router]);
 
   if (authLoading || !user) return <PageSpinner />;
-  if (!items.length) {
-    router.push('/cart');
-    return null;
-  }
+  if (!items.length) return <PageSpinner />;
+
+  // Build the checkout payload — order is created server-side AFTER payment
+  const orderItems = items
+    .filter((i) => i.products)
+    .map((i) => ({
+      productId: i.products!.id,
+      variantId: i.variant_id ?? undefined,
+      quantity: i.quantity,
+    }));
+
+  const checkoutData: CheckoutData = {
+    items: orderItems,
+    addressId: selectedAddress ?? undefined,
+    discountCode: discountCode || undefined,
+    shippingAmount: shipping,
+    notes: notes || undefined,
+    idempotencyKey: crypto.randomUUID(),
+  };
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -184,25 +168,21 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Pay */}
+          {/* Pay button — no pre-created order */}
           <div className="rounded-2xl border border-neutral-200 p-5 space-y-3">
-            {!createdOrderId ? (
-              <Button
-                fullWidth
-                size="lg"
-                loading={creatingOrder}
-                onClick={handleCreateOrder}
-              >
-                Continue to Payment
-              </Button>
+            {orderItems.length === 0 ? (
+              <p className="text-sm text-center text-neutral-500">
+                No product items in cart. Add products to checkout.
+              </p>
             ) : (
               <PayButton
-                orderId={createdOrderId}
+                checkoutData={checkoutData}
                 amount={grandTotal}
                 amountFormatted={formatPrice(grandTotal)}
                 description="Tiuri Nails & Wigs Parlour"
-                onSuccess={() => {
-                  router.push(`/payment/success`);
+                label="Choose Payment"
+                onSuccess={(_, orderId) => {
+                  router.push(orderId ? `/account/orders/${orderId}` : '/account/orders');
                 }}
               />
             )}
