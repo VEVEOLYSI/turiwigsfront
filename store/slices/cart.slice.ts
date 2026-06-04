@@ -25,6 +25,7 @@ export const fetchCartThunk = createAsyncThunk('cart/fetch', async (_, { rejectW
   }
 });
 
+// After adding an item, re-fetch the full cart so product name/image joins are present
 export const addToCartThunk = createAsyncThunk(
   'cart/addItem',
   async (
@@ -32,11 +33,13 @@ export const addToCartThunk = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await cartApi.addItem(payload);
-      return data.data;
+      await cartApi.addItem(payload);
+      const { data } = await cartApi.get();
+      return data.data; // full Cart with products/services joined
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })
-        ?.response?.data?.error ?? 'Could not add to cart';
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+        'Could not add to cart';
       return rejectWithValue(msg);
     }
   }
@@ -85,11 +88,13 @@ const cartSlice = createSlice({
         state.loading = false;
         state.error = payload as string;
       })
+      // addToCartThunk now returns the full Cart
       .addCase(addToCartThunk.fulfilled, (state, { payload }) => {
-        if (state.cart) {
-          state.cart.items.push(payload);
-        }
+        state.cart = payload;
         state.open = true;
+      })
+      .addCase(addToCartThunk.rejected, (state, { payload }) => {
+        state.error = payload as string;
       })
       .addCase(removeCartItemThunk.fulfilled, (state, { payload: id }) => {
         if (state.cart) {
@@ -108,7 +113,6 @@ const cartSlice = createSlice({
 export const { openCart, closeCart, toggleCart } = cartSlice.actions;
 export default cartSlice.reducer;
 
-// Selectors
 export const selectCartCount = (state: { cart: CartState }) =>
   state.cart.cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
 

@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, ShoppingBag, Minus, Plus, Trash2 } from 'lucide-react';
+import { X, ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/hooks/useCart';
@@ -60,7 +60,7 @@ export function CartDrawer() {
                     <div className="flex-1 overflow-y-auto px-6 py-4">
                       {items.length === 0 ? (
                         <EmptyState
-                          icon={ShoppingBag}
+                          icon={ShoppingCart}
                           title="Your cart is empty"
                           description="Add some wigs to get started!"
                           action={

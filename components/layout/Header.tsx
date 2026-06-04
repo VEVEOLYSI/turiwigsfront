@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Heart, User, Search, Menu, X } from 'lucide-react';
+import { ShoppingCart, Heart, User, Search, Menu, X } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
@@ -135,7 +135,7 @@ export function Header() {
             </div>
 
             <IconBtn onClick={toggleCart} label="Cart" count={count}>
-              <ShoppingBag className="h-4 w-4 text-salon-mid" />
+              <ShoppingCart className="h-4 w-4 text-salon-mid" />
             </IconBtn>
 
             <button onClick={() => dispatch(toggleMobileMenu())}

@@ -19,9 +19,13 @@ export function ProductGrid({ products, loading = false, wishlistedIds = [] }: P
   const { addItem } = useCart();
   const { toggle: toggleWishlist, isWishlisted } = useWishlist(wishlistedIds);
 
-  const handleAddToCart = (product: Product) => {
-    addItem({ productId: product.id, quantity: 1 });
-    toast.success(`${product.name} added to cart`);
+  const handleAddToCart = async (product: Product) => {
+    try {
+      await addItem({ productId: product.id, quantity: 1 });
+      toast.success(`${product.name} added to cart`);
+    } catch (err: unknown) {
+      toast.error((err as string) ?? 'Could not add to cart');
+    }
   };
 
   if (loading) return <PageSpinner />;

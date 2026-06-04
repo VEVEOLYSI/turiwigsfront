@@ -31,7 +31,7 @@ export function useCart() {
     total,
     toggle: () => dispatch(toggleCart()),
     addItem: (payload: { productId?: string; serviceId?: string; variantId?: string; quantity?: number }) =>
-      dispatch(addToCartThunk(payload)),
+      dispatch(addToCartThunk(payload)).unwrap(),
     removeItem: (id: string) => dispatch(removeCartItemThunk(id)),
     updateItem: (id: string, quantity: number) => dispatch(updateCartItemThunk({ id, quantity })),
   };

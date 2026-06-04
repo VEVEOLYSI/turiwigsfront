@@ -6,8 +6,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Heart, ShoppingBag, Star } from 'lucide-react';
 import { productsApi } from '@/api/products.api';
-import { cartApi } from '@/api/cart.api';
 import { wishlistApi } from '@/api/wishlist.api';
+import { useCart } from '@/hooks/useCart';
 import { reviewsApi } from '@/api/reviews.api';
 import { formatPrice, getDiscountPercent, timeAgo } from '@/utils/formatters';
 import { Button } from '@/components/ui/Button';
@@ -23,6 +23,7 @@ export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const { addItem } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -68,7 +69,7 @@ export default function ProductDetailPage() {
     if (!product) return;
     setAddingToCart(true);
     try {
-      await cartApi.addItem({
+      await addItem({
         productId: product.id,
         variantId: selectedVariant?.id,
         quantity,
@@ -129,7 +130,7 @@ export default function ProductDetailPage() {
         <ArrowLeft className="h-4 w-4" /> All Products
       </Link>
 
-      <div className="grid gap-10 lg:grid-cols-2">
+      <div className="grid gap-6 sm:gap-10 lg:grid-cols-2">
         {/* ── Image gallery ── */}
         <div className="flex gap-3">
           {images.length > 1 && (
@@ -154,8 +155,10 @@ export default function ProductDetailPage() {
               alt={images[selectedImage]?.alt ?? product.name}
               fill
               className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 55vw, 45vw"
               priority
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUzMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PC9zdmc+"
             />
             <div className="absolute left-3 top-3 flex flex-col gap-1.5">
               {product.is_featured && (

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, ShoppingBag } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { formatPrice, getDiscountPercent } from '@/utils/formatters';
 import { StarRating } from '@/components/ui/StarRating';
@@ -38,7 +38,10 @@ export function ProductCard({
             alt={product.images[0]?.alt ?? product.name}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            sizes="(max-width: 480px) 50vw, (max-width: 768px) 45vw, (max-width: 1024px) 33vw, 25vw"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUzMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PC9zdmc+"
+            loading="lazy"
           />
           {/* Badges */}
           <div className="absolute left-3 top-3 flex flex-col gap-1.5">
@@ -74,14 +77,14 @@ export function ProductCard({
             <Heart className={cn('h-4 w-4', isWishlisted && 'fill-current')} />
           </button>
 
-          {/* Add to cart overlay */}
+          {/* Add to cart — always visible on mobile, hover-reveal on desktop */}
           {product.stock > 0 && (
-            <div className="absolute inset-x-3 bottom-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+            <div className="absolute inset-x-3 bottom-3 translate-y-0 opacity-100 sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 transition-all duration-200">
               <button
                 onClick={(e) => { e.preventDefault(); onAddToCart?.(product); }}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-black/90 py-2.5 text-sm font-medium text-white backdrop-blur-sm hover:bg-black transition-colors"
               >
-                <ShoppingBag className="h-4 w-4" />
+                <ShoppingCart className="h-4 w-4" />
                 Add to Cart
               </button>
             </div>
