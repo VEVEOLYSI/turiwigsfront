@@ -2,9 +2,7 @@ import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import './globals.css';
 import { StoreProvider } from '@/store/provider';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { CartDrawer } from '@/components/cart/CartDrawer';
+import { LayoutShell } from '@/components/layout/LayoutShell';
 import { Toaster } from 'react-hot-toast';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' });
@@ -17,13 +15,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-white text-neutral-900">
+    <html lang="en" className={`${geist.variable} h-full antialiased`} data-scroll-behavior="smooth">
+      <body className="flex min-h-full flex-col bg-white text-neutral-900" suppressHydrationWarning>
         <StoreProvider>
-          <Header />
-          <CartDrawer />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <LayoutShell>{children}</LayoutShell>
           <Toaster
             position="top-center"
             toastOptions={{

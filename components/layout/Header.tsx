@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ShoppingBag, Heart, User, Search, Menu, X } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
 import { toggleMobileMenu } from '@/store/slices/ui.slice';
 import { cn } from '@/utils/cn';
@@ -50,7 +51,10 @@ function IconBtn({ onClick, href, label, count, children }: {
 export function Header() {
   const { count, toggle: toggleCart } = useCart();
   const { user } = useAuth();
+  const { isAdmin, isStaff } = useRole();
   const dispatch = useAppDispatch();
+
+  const dashboardHref = isAdmin ? '/admin' : isStaff ? '/staff' : null;
   const mobileOpen = useAppSelector((s) => s.ui.mobileMenuOpen);
 
   return (
@@ -89,10 +93,7 @@ export function Header() {
             {NAV.map((item) => (
               <Link key={item.href} href={item.href}
                 className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-150"
-                style={{
-                  color: '#143d2a',
-                  textShadow: '0 1px 0 rgba(255,255,255,0.7)',
-                }}
+                style={{ color: '#143d2a', textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}
                 onMouseEnter={(e) => {
                   (e.target as HTMLElement).style.color = '#c9a227';
                   (e.target as HTMLElement).style.background = 'rgba(201,162,39,0.08)';
@@ -105,6 +106,18 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+            {dashboardHref && (
+              <Link href={dashboardHref}
+                className="ml-1 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-150"
+                style={{
+                  background: 'linear-gradient(180deg,#1e5038 0%,#0a2e1f 100%)',
+                  color: '#f0d878',
+                  boxShadow: '0 1px 0 rgba(255,255,255,0.1) inset,0 2px 6px rgba(10,46,31,0.3)',
+                }}
+              >
+                {isAdmin ? '⚙ Admin' : '⚙ Staff'}
+              </Link>
+            )}
           </nav>
 
           {/* Actions */}
@@ -147,12 +160,20 @@ export function Header() {
               {item.label}
             </Link>
           ))}
-          <div className="mt-2 border-t pt-2" style={{ borderColor: 'rgba(201,162,39,0.2)' }}>
+          <div className="mt-2 border-t pt-2 space-y-0.5" style={{ borderColor: 'rgba(201,162,39,0.2)' }}>
             <Link href={user ? '/account/profile' : '/auth/login'} onClick={() => dispatch(toggleMobileMenu())}
               className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-salon-mid hover:text-gold transition-colors">
               <User className="h-4 w-4" />
               {user ? user.name : 'Sign In'}
             </Link>
+            {dashboardHref && (
+              <Link href={dashboardHref} onClick={() => dispatch(toggleMobileMenu())}
+                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-colors"
+                style={{ color: '#f0d878', background: 'rgba(10,46,31,0.08)' }}>
+                <span>⚙</span>
+                {isAdmin ? 'Admin Dashboard' : 'Staff Dashboard'}
+              </Link>
+            )}
           </div>
         </nav>
       </div>
