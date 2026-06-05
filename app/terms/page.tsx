@@ -144,6 +144,12 @@ export default function TermsPage() {
   return (
     <main style={{ background: '#ffffff' }}>
 
+      {/* Scoped hover style — no JS needed */}
+      <style>{`
+        .toc-link { color: rgba(10,46,31,0.5); transition: color 150ms; }
+        .toc-link:hover { color: #0a2e1f; }
+      `}</style>
+
       {/* Hero */}
       <section className="py-16 sm:py-20" style={{ background: '#0a2e1f' }}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
@@ -152,7 +158,7 @@ export default function TermsPage() {
             Legal
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Terms & Conditions
+            Terms &amp; Conditions
           </h1>
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
             Last updated: June 2025 &nbsp;·&nbsp; Governed by the laws of Kenya
@@ -163,7 +169,7 @@ export default function TermsPage() {
       {/* Content */}
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-16 grid lg:grid-cols-[220px_1fr] gap-12">
 
-        {/* Sidebar TOC */}
+        {/* Sidebar TOC — pure CSS hover via .toc-link */}
         <aside className="hidden lg:block">
           <div className="sticky top-24">
             <p className="text-[10px] font-bold uppercase tracking-widest mb-4"
@@ -172,11 +178,7 @@ export default function TermsPage() {
             </p>
             <nav className="flex flex-col gap-2">
               {SECTIONS.map((s) => (
-                <a key={s.id} href={`#${s.id}`}
-                  className="text-xs leading-snug transition-colors hover:opacity-100"
-                  style={{ color: 'rgba(10,46,31,0.5)' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#0a2e1f'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(10,46,31,0.5)'; }}>
+                <a key={s.id} href={`#${s.id}`} className="toc-link text-xs leading-snug">
                   {s.title}
                 </a>
               ))}
@@ -186,7 +188,6 @@ export default function TermsPage() {
 
         {/* Body */}
         <article className="min-w-0">
-          {/* Intro notice */}
           <div className="rounded-2xl p-5 mb-10 text-sm leading-relaxed"
             style={{ background: 'rgba(201,162,39,0.08)', border: '1px solid rgba(201,162,39,0.25)', color: 'rgba(10,46,31,0.7)' }}>
             Please read these Terms carefully before using our website or services. By proceeding, you confirm that you have read, understood and agree to be bound by these Terms, which comply with the applicable laws of Kenya.
@@ -205,11 +206,10 @@ export default function TermsPage() {
             </section>
           ))}
 
-          {/* Back to top */}
           <div className="mt-14 pt-8 border-t flex items-center justify-between"
             style={{ borderColor: 'rgba(201,162,39,0.2)' }}>
             <p className="text-xs" style={{ color: 'rgba(10,46,31,0.35)' }}>
-              © {new Date().getFullYear()} Tiuri Nails & Wigs Parlour. All rights reserved.
+              © {new Date().getFullYear()} Tiuri Nails &amp; Wigs Parlour. All rights reserved.
             </p>
             <Link href="/" className="text-xs font-semibold uppercase tracking-widest transition-opacity hover:opacity-70"
               style={{ color: '#c9a227' }}>
