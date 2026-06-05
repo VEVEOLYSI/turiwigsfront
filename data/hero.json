@@ -1,0 +1,64 @@
+{
+  "brand": "Tiuri Nails & Wigs Parlour",
+  "headline": ["Look Your", "Best."],
+  "cta": { "label": "BOOK YOUR APPOINTMENT", "href": "/bookings" },
+  "ctaSub": "Start your journey today",
+  "videos": [
+    "/video/hero-1.mp4",
+    "/video/hero-2.mp4",
+    "/video/hero-3.mp4",
+    "/video/hero-4.mp4",
+    "/video/hero-5.mp4"
+  ],
+  "gallery": [
+    {
+      "src": "/images/salon-1.jpeg",
+      "videoSrc": "/video/hero-1.mp4",
+      "text": "Get the best nails tech",
+      "href": "/services",
+      "label": "NAILS"
+    },
+    {
+      "src": "/images/salon-2.jpeg",
+      "videoSrc": "/video/hero-2.mp4",
+      "text": "Best space for your peace",
+      "href": "/services",
+      "label": "SALON"
+    },
+    {
+      "src": "/images/salon-3.jpeg",
+      "videoSrc": "/video/hero-3.mp4",
+      "text": "We take care of you at any time of your life",
+      "href": "/services",
+      "label": "CARE"
+    },
+    {
+      "src": "/images/salon-4.jpeg",
+      "videoSrc": "/video/hero-4.mp4",
+      "text": "Get the best nails tech",
+      "href": "/products",
+      "label": "WIGS"
+    },
+    {
+      "src": "/images/salon-5.jpeg",
+      "videoSrc": "/video/hero-5.mp4",
+      "text": "Best space for your peace",
+      "href": "/products",
+      "label": "STYLE"
+    },
+    {
+      "src": "/images/salon-6.jpeg",
+      "videoSrc": "/video/hero-1.mp4",
+      "text": "We take care of you at any time of your life",
+      "href": "/services",
+      "label": "NAILS"
+    },
+    {
+      "src": "/images/salon-7.png",
+      "videoSrc": "/video/hero-2.mp4",
+      "text": "Get the best nails tech",
+      "href": "/products",
+      "label": "WIGS"
+    }
+  ]
+}

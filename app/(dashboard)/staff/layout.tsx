@@ -5,13 +5,19 @@ import { useRouter } from 'next/navigation';
 import { useRole } from '@/hooks/useRole';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { PageSpinner } from '@/components/ui/Spinner';
-import { LayoutDashboard, ShoppingBag, BookOpen } from 'lucide-react';
+import {
+  LayoutDashboard, ShoppingBag, BookOpen, DollarSign,
+  Calendar, UserCircle, MessageSquare,
+} from 'lucide-react';
 import type { NavItem } from '@/components/dashboard/DashboardShell';
 
 const NAV: NavItem[] = [
-  { label: 'Overview', href: '/staff',          icon: LayoutDashboard, exact: true },
-  { label: 'Orders',   href: '/staff/orders',   icon: ShoppingBag },
-  { label: 'Bookings', href: '/staff/bookings', icon: BookOpen },
+  { label: 'My Dashboard',  href: '/staff',              icon: LayoutDashboard, exact: true },
+  { label: 'My Schedule',   href: '/staff/bookings',     icon: Calendar },
+  { label: 'Orders',        href: '/staff/orders',       icon: ShoppingBag },
+  { label: 'Commissions',   href: '/staff/commissions',  icon: DollarSign },
+  { label: 'Client Notes',  href: '/staff/client-notes', icon: MessageSquare },
+  { label: 'My Profile',    href: '/staff/profile',      icon: UserCircle },
 ];
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
@@ -21,7 +27,6 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) { router.replace('/auth/login'); return; }
-    // Customers cannot access the staff panel
     if (!isDashboardUser) { router.replace('/'); }
   }, [loading, isAuthenticated, isDashboardUser, router]);
 
