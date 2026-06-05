@@ -72,4 +72,11 @@ export const staffDashboardApi = {
 
   getOwnPerformance: () =>
     client.get<ApiResponse<OwnPerformance>>('/staff-dashboard/performance'),
+
+  upsertStaffProfile: (data: {
+    mpesaNumber?: string; bankName?: string; bankAccount?: string;
+    emergencyContactName?: string; emergencyContactPhone?: string;
+    name?: string; phone?: string; bio?: string;
+  }) =>
+    client.put<ApiResponse<OwnStaffProfile>>('/staff-dashboard/profile', data),
 };

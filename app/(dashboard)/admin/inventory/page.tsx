@@ -125,7 +125,7 @@ export default function AdminInventoryPage() {
               ) : items.map((item) => {
                 const isLow  = Number(item.stock_quantity) <= Number(item.low_stock_threshold) && Number(item.stock_quantity) > 0;
                 const isOut  = Number(item.stock_quantity) <= 0;
-                const catName = Array.isArray(item.inventory_categories) ? item.inventory_categories[0]?.name : item.inventory_categories?.name;
+                const catName = item.inventory_categories?.[0]?.name;
                 return (
                   <tr key={item.id} className="border-b border-neutral-50 hover:bg-neutral-50">
                     <td className="px-4 py-3 font-medium text-neutral-800">{item.name}{item.sku && <span className="ml-1 text-[9px] text-neutral-400 font-mono">#{item.sku}</span>}</td>
