@@ -58,12 +58,15 @@ export function Header() {
   const pathname = usePathname();
 
   const [scrolled, setScrolled] = useState(false);
+  const isOnHome = pathname === '/';
 
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 50); }
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  const transparent = isOnHome && !scrolled;
 
   const isOnProducts = pathname.startsWith('/products');
   const dashboardHref = isAdmin ? '/admin' : isStaff ? '/staff' : null;
@@ -73,14 +76,14 @@ export function Header() {
     <>
       <header
         className="sticky top-0 z-40 w-full transition-all duration-300"
-        style={scrolled ? {
-          background: 'linear-gradient(180deg, #000000 0%, #030705 100%)',
-          borderBottom: '1px solid rgba(201,162,39,0.25)',
-          boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
-        } : {
+        style={transparent ? {
           background: 'transparent',
           borderBottom: '1px solid transparent',
           boxShadow: 'none',
+        } : {
+          background: 'linear-gradient(180deg, #000000 0%, #030705 100%)',
+          borderBottom: '1px solid rgba(201,162,39,0.25)',
+          boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
         }}
       >
         {/* Gold accent bar — only visible when scrolled */}
@@ -88,7 +91,7 @@ export function Header() {
           className="h-0.5 w-full transition-opacity duration-300"
           style={{
             background: 'linear-gradient(90deg, transparent, #c9a227 30%, #f0d878 50%, #c9a227 70%, transparent)',
-            opacity: scrolled ? 1 : 0,
+            opacity: transparent ? 0 : 1,
           }}
         />
 
@@ -167,7 +170,7 @@ export function Header() {
             <button onClick={() => dispatch(toggleMobileMenu())}
               className="md:hidden flex h-9 w-9 items-center justify-center rounded-full transition-all"
               style={{
-                background: scrolled ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.3)',
+                background: transparent ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
                 border: '1px solid rgba(255,255,255,0.2)',
                 backdropFilter: 'blur(4px)',
               }}>

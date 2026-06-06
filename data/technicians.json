@@ -1,0 +1,58 @@
+[
+  {
+    "id": "tech-001",
+    "name": "Amina Wanjiku",
+    "title": "Senior Nail Technician",
+    "experience": "6 years",
+    "languages": ["English", "Swahili", "Kikuyu"],
+    "skills": ["Gel Nails", "Nail Art", "Acrylics", "Pedicure"],
+    "rating": 4.9,
+    "reviews": 312,
+    "photo": "/images/tiuri-wigs.jpeg",
+    "bio": "Amina is a passionate nail artist with over 6 years of experience specializing in intricate nail art and gel extensions.",
+    "slots": ["09:00", "11:00", "14:00", "16:00"],
+    "certifications": ["Certified Nail Technician – KNBS", "Gel & Acrylic Pro Certificate"]
+  },
+  {
+    "id": "tech-002",
+    "name": "Fatuma Otieno",
+    "title": "Wig Stylist & Colorist",
+    "experience": "5 years",
+    "languages": ["English", "Swahili", "Dholuo"],
+    "skills": ["Wig Installation", "Hair Coloring", "Braiding", "Lace Fronts"],
+    "rating": 4.8,
+    "reviews": 248,
+    "photo": "/images/tiuri-wigs.jpeg",
+    "bio": "Fatuma is an expert wig stylist known for flawless lace front installations and vibrant hair color transformations.",
+    "slots": ["09:30", "11:30", "14:30", "16:30"],
+    "certifications": ["Licensed Cosmetologist – Kenya", "Wig & Extensions Specialist"]
+  },
+  {
+    "id": "tech-003",
+    "name": "Grace Muthoni",
+    "title": "Pedicure & Manicure Specialist",
+    "experience": "4 years",
+    "languages": ["English", "Swahili"],
+    "skills": ["Pedicure", "Manicure", "Nail Spa", "Polish Art"],
+    "rating": 4.7,
+    "reviews": 189,
+    "photo": "/images/tiuri-wigs.jpeg",
+    "bio": "Grace brings a soothing touch to every session, offering premium pedicure and manicure experiences that leave clients refreshed.",
+    "slots": ["10:00", "12:00", "15:00", "17:00"],
+    "certifications": ["Nail Care Professional – TVET"]
+  },
+  {
+    "id": "tech-004",
+    "name": "Stella Akinyi",
+    "title": "Nail Art & Wig Technician",
+    "experience": "3 years",
+    "languages": ["English", "Swahili", "Luhya"],
+    "skills": ["3D Nail Art", "Chrome Nails", "Wig Styling", "Braids"],
+    "rating": 4.8,
+    "reviews": 156,
+    "photo": "/images/tiuri-wigs.jpeg",
+    "bio": "Stella is a creative force specializing in bold nail art designs and contemporary wig styling for the modern Nairobi woman.",
+    "slots": ["09:00", "12:00", "14:00", "17:00"],
+    "certifications": ["Creative Nail Design Certified", "Hair Extensions Pro"]
+  }
+]

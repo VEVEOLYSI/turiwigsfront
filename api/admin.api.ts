@@ -83,16 +83,15 @@ export const adminApi = {
   getOrder: (id: string) =>
     client.get<ApiResponse<Order>>(`/admin/orders/${id}`),
 
-  // Backend route: PUT /admin/orders/:id/status
+  // Backend route: PUT /admin/orders/:id/status — handles both fulfillment and payment statuses
   updateOrderStatus: (id: string, status: OrderStatus) =>
     client.put<ApiResponse<Order>>(`/admin/orders/${id}/status`, { status }),
 
-  // Backend route: PUT /admin/orders/:id/payment-status (admin only)
-  updatePaymentStatus: (id: string, payment_status: PaymentStatus) =>
-    client.put<ApiResponse<Order>>(`/admin/orders/${id}/payment-status`, { payment_status }),
+  updatePaymentStatus: (id: string, payment_status: Exclude<PaymentStatus, 'failed'>) =>
+    client.put<ApiResponse<Order>>(`/admin/orders/${id}/status`, { status: payment_status }),
 
   refundOrder: (id: string) =>
-    client.post<ApiResponse<Order>>(`/admin/orders/${id}/refund`),
+    client.put<ApiResponse<Order>>(`/admin/orders/${id}/status`, { status: 'refunded' }),
 
   // Bookings
   listBookings: (params?: {

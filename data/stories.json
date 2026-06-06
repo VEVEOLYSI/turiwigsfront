@@ -1,0 +1,96 @@
+{
+  "stories": [
+    {
+      "id": "story-001",
+      "label": "50% Off Gel",
+      "category": "promotion",
+      "avatar": "/images/nails-1.jpeg",
+      "read": true,
+      "color": "#c9a227",
+      "slides": [
+        {
+          "image": "/images/nails-1.jpeg",
+          "caption": "This week only: 50% off all gel nail services! Book now before slots fill up."
+        }
+      ]
+    },
+    {
+      "id": "story-002",
+      "label": "Client Love",
+      "category": "testimonial",
+      "avatar": "/images/nails-2.jpeg",
+      "read": true,
+      "color": "#f0d878",
+      "slides": [
+        {
+          "image": "/images/nails-2.jpeg",
+          "caption": "\"Best nail parlour in Nairobi! Amina did an amazing job on my gel extensions.\" — Cynthia M."
+        }
+      ]
+    },
+    {
+      "id": "story-003",
+      "label": "Meet Amina",
+      "category": "technician",
+      "avatar": "/images/nails-3.jpeg",
+      "read": false,
+      "color": "#e8c84a",
+      "slides": [
+        {
+          "image": "/images/nails-3.jpeg",
+          "caption": "Meet Amina — 6 years of nail artistry, now taking bookings for July!"
+        },
+        {
+          "image": "/images/nails-4.jpeg",
+          "caption": "Amina specializes in intricate 3D nail art and flawless gel extensions."
+        }
+      ]
+    },
+    {
+      "id": "story-004",
+      "label": "Glow Up",
+      "category": "before_after",
+      "avatar": "/images/nails-4.jpeg",
+      "read": false,
+      "color": "#c9a227",
+      "slides": [
+        {
+          "image": "/images/nails-4.jpeg",
+          "caption": "Before & After: Chrome nail transformation at Tiuri Parlour."
+        },
+        {
+          "image": "/images/nails-5.jpeg",
+          "caption": "The results speak for themselves — stunning chrome finish in just 90 minutes!"
+        }
+      ]
+    },
+    {
+      "id": "story-005",
+      "label": "New: Lashes",
+      "category": "promotion",
+      "avatar": "/images/nails-5.jpeg",
+      "read": false,
+      "color": "#f0d878",
+      "slides": [
+        {
+          "image": "/images/nails-5.jpeg",
+          "caption": "New service alert: Lash extensions now available! Ask your technician today."
+        }
+      ]
+    },
+    {
+      "id": "story-006",
+      "label": "Wig Styles",
+      "category": "before_after",
+      "avatar": "/images/nails-6.jpeg",
+      "read": false,
+      "color": "#e8c84a",
+      "slides": [
+        {
+          "image": "/images/nails-6.jpeg",
+          "caption": "From natural to glam — our wig stylists can transform any look you desire."
+        }
+      ]
+    }
+  ]
+}

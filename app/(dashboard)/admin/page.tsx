@@ -212,7 +212,7 @@ export default function AdminOverviewPage() {
       {/* ── Header ────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold text-neutral-900">IT Admin Dashboard</h1>
+          <h1 className="text-xl font-bold text-neutral-900">Admin Dashboard</h1>
           <p className="text-sm text-neutral-400 mt-0.5">
             {dayName}, {dateStr} · {timeStr}
           </p>

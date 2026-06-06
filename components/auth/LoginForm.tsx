@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
 import { loginThunk, fetchMeThunk } from '@/store/slices/auth.slice';
 import { Input } from '@/components/ui/Input';
@@ -14,6 +15,7 @@ export function LoginForm() {
   const router = useRouter();
   const { loading, error } = useAppSelector((s) => s.auth);
   const [form, setForm] = useState({ email: '', password: '' });
+  const [showPwd, setShowPwd] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,12 +40,26 @@ export function LoginForm() {
       />
       <Input
         label="Password"
-        type="password"
+        type={showPwd ? 'text' : 'password'}
         placeholder="••••••••"
         autoComplete="current-password"
         value={form.password}
         onChange={(e) => setForm({ ...form, password: e.target.value })}
         required
+        suffix={
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => setShowPwd((v) => !v)}
+            aria-label={showPwd ? 'Hide password' : 'Show password'}
+            className="flex items-center justify-center transition-colors"
+            style={{ color: '#9a8060' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#0a2e1f'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#9a8060'; }}
+          >
+            {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        }
       />
 
       {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
@@ -54,7 +70,14 @@ export function LoginForm() {
         </Link>
       </div>
 
-      <Button type="submit" fullWidth size="lg" loading={loading}>
+      <Button type="submit" fullWidth size="lg" loading={loading} variant="secondary"
+        style={{
+          background: 'linear-gradient(180deg,#1e5038 0%,#0a2e1f 100%)',
+          border: '1px solid rgba(10,46,31,0.6)',
+          color: '#ffffff',
+          boxShadow: '0 1px 0 rgba(255,255,255,0.08) inset,0 4px 12px rgba(10,46,31,0.35)',
+        }}
+      >
         Sign In
       </Button>
 

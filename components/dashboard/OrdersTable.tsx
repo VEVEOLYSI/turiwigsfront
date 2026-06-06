@@ -15,7 +15,7 @@ const ORDER_STATUS_OPTIONS: OrderStatus[] = [
   'pending', 'processing', 'shipped', 'delivered', 'cancelled',
 ];
 
-const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ['pending', 'paid', 'failed', 'refunded'];
+const PAYMENT_STATUS_OPTIONS: Exclude<PaymentStatus, 'failed'>[] = ['pending', 'paid', 'refunded'];
 
 const orderStatusVariant: Record<OrderStatus, 'default' | 'info' | 'success' | 'warning' | 'danger'> = {
   pending: 'warning',
@@ -61,7 +61,7 @@ export function OrdersTable({ orders, basePath, canManagePayments, onOrderUpdate
     }
   };
 
-  const updatePaymentStatus = async (id: string, payment_status: PaymentStatus) => {
+  const updatePaymentStatus = async (id: string, payment_status: Exclude<PaymentStatus, 'failed'>) => {
     setBusy(id);
     try {
       const { data } = await adminApi.updatePaymentStatus(id, payment_status);
@@ -125,7 +125,7 @@ export function OrdersTable({ orders, basePath, canManagePayments, onOrderUpdate
                 {canManagePayments ? (
                   <select
                     value={order.payment_status}
-                    onChange={(e) => updatePaymentStatus(order.id, e.target.value as PaymentStatus)}
+                    onChange={(e) => updatePaymentStatus(order.id, e.target.value as Exclude<PaymentStatus, 'failed'>)}
                     className="rounded-full border-0 bg-transparent py-0.5 text-xs font-medium cursor-pointer focus:ring-0 focus:outline-none"
                   >
                     {PAYMENT_STATUS_OPTIONS.map((s) => (

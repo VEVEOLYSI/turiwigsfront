@@ -4,6 +4,7 @@
 
 [build.environment]
   NEXT_PUBLIC_API_URL = "https://tiuribackend.onrender.com/api/v1"
+  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY = "pk_live_93cac7082040adbe2a990511097c191f263e1a9e"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

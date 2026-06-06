@@ -83,7 +83,7 @@ export function ServiceFormModal({ open, onClose, service, onSaved }: Props) {
     setUploading(true);
     try {
       const results = await Promise.allSettled(
-        files.map((f) => uploadApi.image(f, 'products').then((r) => r.data.data.url))
+        files.map((f) => uploadApi.image(f, 'services').then((r) => r.data.data.url))
       );
       const uploaded = results
         .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled')

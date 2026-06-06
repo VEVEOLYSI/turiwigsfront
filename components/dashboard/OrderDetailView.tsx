@@ -16,7 +16,7 @@ import type { Order, OrderStatus, PaymentStatus } from '@/types';
 const ORDER_STATUS_OPTIONS: OrderStatus[] = [
   'pending', 'processing', 'shipped', 'delivered', 'cancelled',
 ];
-const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ['pending', 'paid', 'failed', 'refunded'];
+const PAYMENT_STATUS_OPTIONS: Exclude<PaymentStatus, 'failed'>[] = ['pending', 'paid', 'refunded'];
 
 const orderVariant: Record<OrderStatus, 'default' | 'warning' | 'info' | 'success' | 'danger'> = {
   pending: 'warning', paid: 'info', processing: 'info',
@@ -62,7 +62,7 @@ export function OrderDetailView({ orderId, backHref, canManagePayments }: OrderD
     }
   };
 
-  const handlePaymentStatus = async (payment_status: PaymentStatus) => {
+  const handlePaymentStatus = async (payment_status: Exclude<PaymentStatus, 'failed'>) => {
     if (!order) return;
     setBusy(true);
     try {
@@ -221,7 +221,7 @@ export function OrderDetailView({ orderId, backHref, canManagePayments }: OrderD
               <>
                 <select
                   value={order.payment_status}
-                  onChange={(e) => handlePaymentStatus(e.target.value as PaymentStatus)}
+                  onChange={(e) => handlePaymentStatus(e.target.value as Exclude<PaymentStatus, 'failed'>)}
                   disabled={busy}
                   className="w-full rounded-xl border border-neutral-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 bg-white"
                 >
