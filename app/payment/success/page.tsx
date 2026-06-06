@@ -3,7 +3,10 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Navigation } from 'lucide-react';
+
+const MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=Tiuri+Nails+%26+Wigs+Parlour,+Jewel+Complex,+Room+220,+2nd+Floor+TRM+Dr,+Nairobi';
+const PARLOUR_ADDRESS = 'Jewel Complex, Room 220, 2nd Floor, TRM Drive, Nairobi';
 import { Button } from '@/components/ui/Button';
 
 function PaymentSuccessContent() {
@@ -29,6 +32,17 @@ function PaymentSuccessContent() {
           <Link href="/account/orders">
             <Button fullWidth>View My Orders</Button>
           </Link>
+          <a
+            href={MAPS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-opacity hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg,#f0d878,#c9a227)', color: '#0a2e1f' }}
+          >
+            <Navigation className="h-4 w-4" />
+            Get Directions to Salon
+          </a>
+          <p className="text-xs text-neutral-400">{PARLOUR_ADDRESS}</p>
           <Link href="/products">
             <Button fullWidth variant="secondary">Continue Shopping</Button>
           </Link>

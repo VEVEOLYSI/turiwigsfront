@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { MapPin, CalendarPlus, ListOrdered, CheckCircle2 } from 'lucide-react';
+import { MapPin, CalendarPlus, ListOrdered, CheckCircle2, Navigation } from 'lucide-react';
+
+const PARLOUR_ADDRESS = 'Tiuri Nails & Wigs Parlour, Jewel Complex, Room 220, 2nd Floor TRM Drive, Nairobi';
+const MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=Tiuri+Nails+%26+Wigs+Parlour,+Jewel+Complex,+Room+220,+2nd+Floor+TRM+Dr,+Nairobi';
 import { bookingsApi } from '@/api/bookings.api';
 import { useAppSelector } from '@/hooks/useAppDispatch';
 import { selectWizard } from '@/store/slices/booking-wizard.slice';
@@ -22,8 +25,8 @@ function buildGoogleCalendarUrl(booking: Booking, serviceName: string): string {
     action: 'TEMPLATE',
     text: `${serviceName} - Tiuri Nails & Wigs`,
     dates: `${startTime}/${endTime}`,
-    details: `Booking #${booking.booking_number}\nTiuri Nails & Wigs Parlour, Nairobi`,
-    location: 'Tiuri Nails & Wigs Parlour, Nairobi, Kenya',
+    details: `Booking #${booking.booking_number}\n${PARLOUR_ADDRESS}`,
+    location: PARLOUR_ADDRESS,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
@@ -152,7 +155,7 @@ export default function ConfirmationPage() {
               <div className="flex justify-between text-sm">
                 <span style={{ color: '#7a8694' }}>Location</span>
                 <span className="font-medium text-right" style={{ color: '#0a2e1f', maxWidth: '200px' }}>
-                  Tiuri Nails & Wigs Parlour, Nairobi, Kenya
+                  {PARLOUR_ADDRESS}
                 </span>
               </div>
             </div>
@@ -239,19 +242,18 @@ export default function ConfirmationPage() {
             )}
 
             <a
-              href="https://www.google.com/maps/search/Tiuri+Nails+Nairobi"
+              href={MAPS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 rounded-xl h-11 text-sm font-semibold"
               style={{
-                background: '#fff',
-                border: '1px solid #e0d8c8',
-                color: '#143d2a',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                background: 'linear-gradient(135deg,#f0d878,#c9a227)',
+                color: '#0a2e1f',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
               }}
             >
-              <MapPin className="h-4 w-4" />
-              Directions
+              <Navigation className="h-4 w-4" />
+              Get Directions
             </a>
           </div>
 

@@ -2,6 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { MapPin } from 'lucide-react';
+
+const MAPS_URL =
+  'https://www.google.com/maps/search/?api=1&query=Tiuri+Nails+%26+Wigs+Parlour,+Jewel+Complex,+Room+220,+2nd+Floor+TRM+Dr,+Nairobi';
+const ADDRESS = 'Jewel Complex, Room 220, 2nd Floor, TRM Drive, Nairobi';
 
 const links = {
   Shop: [
@@ -94,6 +99,26 @@ export function Footer() {
             <p className="mt-4 text-sm leading-relaxed max-w-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
               Premium human hair wigs, nails, and professional wig styling in Nairobi, Kenya. Beauty is our craft.
             </p>
+
+            {/* Address + directions */}
+            <div className="mt-5">
+              <div className="flex items-start gap-2 mb-3">
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" style={{ color: '#c9a227' }} />
+                <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  {ADDRESS}
+                </p>
+              </div>
+              <a
+                href={MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-opacity hover:opacity-80"
+                style={{ background: 'linear-gradient(135deg,#f0d878,#c9a227)', color: '#0a2e1f' }}
+              >
+                <MapPin className="h-3 w-3" />
+                Get Directions
+              </a>
+            </div>
 
             {/* Social icons */}
             <div className="mt-6 flex items-center gap-3">
