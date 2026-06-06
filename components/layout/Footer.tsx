@@ -11,16 +11,16 @@ const links = {
     { label: 'Flash Sales', href: '/promotions/flash-sales' },
   ],
   Services: [
-    { label: 'Wig Washing', href: '/services/wig-washing' },
-    { label: 'Wig Styling', href: '/services/wig-styling' },
-    { label: 'Wig Repair', href: '/services/wig-repair' },
-    { label: 'Book Now', href: '/bookings' },
+    { label: 'All Services', href: '/services' },
+    { label: 'Book Appointment', href: '/bookings' },
+    { label: 'My Bookings', href: '/account/bookings' },
+    { label: 'My Orders', href: '/account/orders' },
   ],
   Company: [
     { label: 'Blog', href: '/blog' },
+    { label: 'About Us', href: '/about' },
+    { label: 'Contact', href: '/contact' },
     { label: 'Terms & Conditions', href: '/terms' },
-    { label: 'My Orders', href: '/account/orders' },
-    { label: 'My Bookings', href: '/account/bookings' },
   ],
 };
 

@@ -6,9 +6,9 @@ import { useRole } from '@/hooks/useRole';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { PageSpinner } from '@/components/ui/Spinner';
 import {
-  LayoutDashboard, ShoppingBag, BookOpen, Package, Users, Scissors,
+  LayoutDashboard, ShoppingBag, Package, Users, Scissors,
   Layers, DollarSign, BarChart2, ClipboardList, Truck, Briefcase,
-  Cpu, Calendar,
+  Cpu, Calendar, FileText,
 } from 'lucide-react';
 import type { NavItem } from '@/components/dashboard/DashboardShell';
 
@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
   { label: 'Bookings',    href: '/admin/bookings',   icon: Calendar },
   { label: 'Products',    href: '/admin/products',   icon: Package },
   { label: 'Services',    href: '/admin/services',   icon: Scissors },
+  { label: 'Blog',        href: '/admin/blog',        icon: FileText },
 
   // ─ ERP
   { label: 'Inventory',   href: '/admin/inventory',  icon: Layers },

@@ -190,6 +190,20 @@ export interface Notification {
   created_at: string;
 }
 
+// ─── Blog ─────────────────────────────────────────────────────────────────────
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  cover_image?: string;
+  is_published: boolean;
+  published_at?: string;
+  created_at: string;
+  author?: { name: string; avatar_url?: string };
+}
+
 // ─── Promotion ────────────────────────────────────────────────────────────────
 export interface Promotion {
   id: string;

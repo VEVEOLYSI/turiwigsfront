@@ -1,194 +1,127 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Clock, User } from 'lucide-react';
+import { ArrowRight, Calendar, User } from 'lucide-react';
+import { blogApi } from '@/api/blog.api';
+import { formatDate } from '@/utils/formatters';
+import type { BlogPost } from '@/types';
 
-const POSTS = [
-  {
-    slug: 'how-to-care-for-your-human-hair-wig',
-    title: 'How to Care for Your Human Hair Wig',
-    excerpt: 'Proper maintenance extends the life of your wig significantly. Here are our top tips from the Tiuri studio for washing, conditioning and storing your investment.',
-    img: '/images/salon-4.jpeg',
-    category: 'Wig Care',
-    author: 'Tiuri Team',
-    date: 'May 28, 2025',
-    readTime: '4 min read',
-  },
-  {
-    slug: 'nail-trends-2025',
-    title: 'Top Nail Trends to Try in 2025',
-    excerpt: 'From glazed donut acrylics to bold chrome finishes, 2025 is a year of stunning nail art. Discover what our nail technicians are loving right now.',
-    img: '/images/nails-9.jpeg',
-    category: 'Nail Art',
-    author: 'Tiuri Team',
-    date: 'May 14, 2025',
-    readTime: '3 min read',
-  },
-  {
-    slug: 'lace-front-vs-full-lace-wig',
-    title: 'Lace Front vs Full Lace: Which Is Right for You?',
-    excerpt: 'Not sure which wig type suits your lifestyle and budget? We break down the key differences so you can walk in with confidence.',
-    img: '/images/tiuri-wigs.jpeg',
-    category: 'Wigs 101',
-    author: 'Tiuri Team',
-    date: 'April 30, 2025',
-    readTime: '5 min read',
-  },
-  {
-    slug: 'pedicure-guide',
-    title: 'Why a Proper Pedicure Is More Than Just Pretty Toes',
-    excerpt: 'A luxury pedicure is as much about foot health as it is about aesthetics. Learn what our pedicure service includes and why it matters.',
-    img: '/images/nails-2.jpeg',
-    category: 'Pedicure',
-    author: 'Tiuri Team',
-    date: 'April 15, 2025',
-    readTime: '3 min read',
-  },
-  {
-    slug: 'gel-vs-acrylic-nails',
-    title: 'Gel vs Acrylic Nails: What You Need to Know',
-    excerpt: 'Both are beautiful, but each comes with different strengths. Our nail technicians break down durability, cost and removal for you.',
-    img: '/images/nails-4.jpeg',
-    category: 'Nail Art',
-    author: 'Tiuri Team',
-    date: 'March 28, 2025',
-    readTime: '4 min read',
-  },
-  {
-    slug: 'wig-fitting-tips',
-    title: '5 Things to Know Before Your First Wig Fitting',
-    excerpt: 'First-time wig wearers often feel nervous — but it doesn\'t have to be. Here\'s everything you need to know before you come in for your fitting.',
-    img: '/images/salon-5.jpeg',
-    category: 'Wigs 101',
-    author: 'Tiuri Team',
-    date: 'March 10, 2025',
-    readTime: '4 min read',
-  },
-];
-
-const CATEGORIES = ['All', 'Wig Care', 'Wigs 101', 'Nail Art', 'Pedicure'];
+function SkeletonCard() {
+  return (
+    <div className="animate-pulse rounded-2xl border overflow-hidden" style={{ borderColor: '#e0d0b0', background: '#fff' }}>
+      <div className="w-full aspect-[16/9]" style={{ background: '#e8dfc8' }} />
+      <div className="p-5">
+        <div className="h-5 w-3/4 rounded-lg mb-3" style={{ background: '#e8dfc8' }} />
+        <div className="h-3 w-full rounded mb-2" style={{ background: '#f0e8d0' }} />
+        <div className="h-3 w-4/5 rounded mb-4" style={{ background: '#f0e8d0' }} />
+        <div className="h-3 w-24 rounded" style={{ background: '#f0e8d0' }} />
+      </div>
+    </div>
+  );
+}
 
 export default function BlogPage() {
-  const featured = POSTS[0];
-  const rest = POSTS.slice(1);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    blogApi.list()
+      .then(({ data }) => setPosts(data.data))
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
-    <main style={{ background: '#ffffff' }}>
+    <div style={{ background: '#faf6ed', minHeight: '100vh' }}>
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
 
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 text-center" style={{ background: '#faf6ed' }}>
-        <div className="mx-auto max-w-3xl px-4 sm:px-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.35em] mb-4"
-            style={{ color: '#c9a227' }}>
-            Beauty Insights
+        {/* Header */}
+        <div className="mb-12">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.35em] mb-3" style={{ color: '#c9a227' }}>
+            Tips & Inspiration
           </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-5"
-            style={{ color: '#0a2e1f' }}>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight" style={{ color: '#0a2e1f' }}>
             The Tiuri Blog
           </h1>
-          <p className="text-base sm:text-lg leading-relaxed"
-            style={{ color: 'rgba(10,46,31,0.55)' }}>
-            Tips, trends and expert advice from our Nairobi nail and wig studio.
+          <p className="mt-3 text-sm max-w-lg leading-relaxed" style={{ color: '#6b7280' }}>
+            Wig care tips, styling ideas, and news from Tiuri Nails & Wigs.
           </p>
         </div>
 
-        {/* Category filter (visual only — no routing) */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-2 px-4">
-          {CATEGORIES.map((cat, i) => (
-            <span key={cat}
-              className="rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
-              style={i === 0 ? {
-                background: '#0a2e1f', color: '#f0d878',
-              } : {
-                background: 'rgba(10,46,31,0.07)', color: '#0a2e1f',
-              }}>
-              {cat}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14">
-
-        {/* ── Featured post ────────────────────────────────────────────── */}
-        <Link href={`/blog/${featured.slug}`}
-          className="group mb-14 grid lg:grid-cols-2 gap-8 items-center rounded-2xl overflow-hidden"
-          style={{ background: '#faf6ed', border: '1px solid rgba(201,162,39,0.2)' }}>
-          <div className="relative" style={{ aspectRatio: '16/10', minHeight: 280 }}>
-            <Image src={featured.img} alt={featured.title} fill
-              className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 1024px) 100vw, 50vw" />
+        {/* Grid */}
+        {loading ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
-          <div className="p-8 lg:p-10">
-            <span className="inline-block rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest mb-4"
-              style={{ background: '#c9a227', color: '#fff' }}>
-              {featured.category}
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold leading-snug mb-4"
-              style={{ color: '#0a2e1f' }}>
-              {featured.title}
-            </h2>
-            <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(10,46,31,0.6)' }}>
-              {featured.excerpt}
+        ) : !posts.length ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-24 text-center"
+            style={{ borderColor: '#e0d0b0' }}>
+            <p className="text-lg font-semibold mb-2" style={{ color: '#0a2e1f' }}>Coming soon</p>
+            <p className="text-sm" style={{ color: '#9a8060' }}>
+              We&apos;re working on some great content. Check back soon!
             </p>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 text-xs" style={{ color: 'rgba(10,46,31,0.4)' }}>
-                <span className="flex items-center gap-1"><User className="h-3 w-3" /> {featured.author}</span>
-                <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {featured.readTime}</span>
-                <span>{featured.date}</span>
-              </div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest transition-colors group-hover:text-gold"
-                style={{ color: '#c9a227' }}>
-                Read More <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </div>
           </div>
-        </Link>
-
-        {/* ── Post grid ────────────────────────────────────────────────── */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rest.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.slug}`}
-              className="group flex flex-col rounded-2xl overflow-hidden border transition-shadow hover:shadow-lg"
-              style={{ borderColor: 'rgba(201,162,39,0.15)' }}>
-              {/* Image */}
-              <div className="relative flex-shrink-0" style={{ aspectRatio: '4/3' }}>
-                <Image src={post.img} alt={post.title} fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
-                <div className="absolute top-3 left-3">
-                  <span className="rounded-full px-3 py-1 text-[9px] font-bold uppercase tracking-widest"
-                    style={{ background: '#c9a227', color: '#fff' }}>
-                    {post.category}
-                  </span>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <Link
+                key={post.id}
+                href={`/blog/${post.slug}`}
+                className="group flex flex-col rounded-2xl border overflow-hidden transition-all hover:shadow-lg"
+                style={{ borderColor: '#e0d0b0', background: '#fff' }}
+              >
+                {/* Cover */}
+                <div className="relative w-full aspect-[16/9] overflow-hidden">
+                  {post.cover_image ? (
+                    <Image
+                      src={post.cover_image}
+                      alt={post.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center"
+                      style={{ background: 'linear-gradient(135deg, #0a2e1f, #1e5038)' }}>
+                      <span className="text-5xl font-black opacity-10 text-white">T</span>
+                    </div>
+                  )}
                 </div>
-              </div>
 
-              {/* Content */}
-              <div className="flex flex-col flex-1 p-5">
-                <h3 className="font-bold text-base leading-snug mb-2 group-hover:opacity-80 transition-opacity"
-                  style={{ color: '#0a2e1f' }}>
-                  {post.title}
-                </h3>
-                <p className="text-xs leading-relaxed flex-1 mb-4"
-                  style={{ color: 'rgba(10,46,31,0.55)' }}>
-                  {post.excerpt}
-                </p>
-                <div className="flex items-center justify-between pt-3 border-t"
-                  style={{ borderColor: 'rgba(201,162,39,0.15)' }}>
-                  <div className="flex items-center gap-3 text-[10px]" style={{ color: 'rgba(10,46,31,0.4)' }}>
-                    <span className="flex items-center gap-1"><Clock className="h-2.5 w-2.5" /> {post.readTime}</span>
-                    <span>{post.date}</span>
+                {/* Content */}
+                <div className="flex flex-col flex-1 p-5">
+                  <h2 className="text-base font-semibold leading-snug" style={{ color: '#0a2e1f' }}>
+                    {post.title}
+                  </h2>
+
+                  {post.excerpt && (
+                    <p className="mt-2 text-sm leading-relaxed flex-1 line-clamp-2" style={{ color: '#6b7280' }}>
+                      {post.excerpt}
+                    </p>
+                  )}
+
+                  <div className="mt-4 flex items-center justify-between border-t pt-4" style={{ borderColor: '#f0e8d0' }}>
+                    <div className="flex items-center gap-3 text-xs" style={{ color: '#9a8060' }}>
+                      {post.author?.name && (
+                        <span className="flex items-center gap-1">
+                          <User className="h-3 w-3" /> {post.author.name}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {formatDate(post.published_at ?? post.created_at)}
+                      </span>
+                    </div>
+                    <ArrowRight className="h-4 w-4 flex-shrink-0" style={{ color: '#c9a227' }} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"
-                    style={{ color: '#c9a227' }}>
-                    Read <ArrowRight className="h-3 w-3" />
-                  </span>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
