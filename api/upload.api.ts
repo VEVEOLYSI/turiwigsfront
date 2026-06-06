@@ -10,7 +10,8 @@ export const uploadApi = {
     form.append('folder', folder);
     return client.post<ApiResponse<{ url: string; publicId: string; width: number; height: number }>>(
       '/upload/image',
-      form
+      form,
+      { headers: { 'Content-Type': undefined } }
     );
   },
 };
