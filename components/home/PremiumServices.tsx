@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Clock } from 'lucide-react';
+import { ArrowRight, Calendar } from 'lucide-react';
 import { servicesApi } from '@/api/services.api';
 import { formatPrice } from '@/utils/formatters';
 import type { Service } from '@/types';
@@ -19,20 +19,16 @@ function getImage(service: Service, index: number) {
   return service.images?.[0]?.url ?? FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
 }
 
+function tagFromName(name: string) {
+  return name.split(/[\s&]/)[0].toUpperCase().slice(0, 8);
+}
+
 function SkeletonCard() {
   return (
-    <div className="animate-pulse rounded-2xl border overflow-hidden" style={{ borderColor: '#e0d0b0', background: '#fff' }}>
-      <div className="w-full aspect-[4/3]" style={{ background: '#e8dfc8' }} />
-      <div className="p-5">
-        <div className="h-5 w-2/3 rounded-lg mb-3" style={{ background: '#e8dfc8' }} />
-        <div className="h-3 w-full rounded mb-2" style={{ background: '#f0e8d0' }} />
-        <div className="h-3 w-4/5 rounded mb-5" style={{ background: '#f0e8d0' }} />
-        <div className="flex justify-between pt-4 border-t" style={{ borderColor: '#f0e8d0' }}>
-          <div className="h-5 w-20 rounded" style={{ background: '#e8dfc8' }} />
-          <div className="h-4 w-16 rounded" style={{ background: '#f0e8d0' }} />
-        </div>
-      </div>
-    </div>
+    <div
+      className="animate-pulse rounded-2xl bg-neutral-200"
+      style={{ aspectRatio: '3/4' }}
+    />
   );
 }
 
@@ -76,53 +72,63 @@ export function PremiumServices() {
           </Link>
         </div>
 
-        {/* Cards */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
             : services.map((service, i) => (
                 <Link
                   key={service.id}
                   href={`/services/${service.slug}`}
-                  className="group flex flex-col rounded-2xl border overflow-hidden transition-all hover:shadow-lg"
-                  style={{ borderColor: '#e0d0b0', background: '#fff' }}
+                  className="group relative overflow-hidden"
+                  style={{ borderRadius: 16, aspectRatio: '3/4' }}
                 >
-                  {/* Image */}
-                  <div className="relative w-full aspect-[4/3] overflow-hidden">
-                    <Image
-                      src={getImage(service, i)}
-                      alt={service.name}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                    />
+                  <Image
+                    src={getImage(service, i)}
+                    alt={service.name}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                  />
+
+                  {/* Gradient overlay */}
+                  <div
+                    className="absolute inset-0 transition-opacity duration-300"
+                    style={{
+                      background:
+                        'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)',
+                    }}
+                  />
+
+                  {/* Gold tag */}
+                  <div
+                    className="absolute top-3 left-3 rounded-full px-2.5 py-1"
+                    style={{ background: '#c9a227' }}
+                  >
+                    <span className="text-[9px] font-black text-white tracking-[0.2em]">
+                      {tagFromName(service.name)}
+                    </span>
                   </div>
 
-                  {/* Content */}
-                  <div className="flex flex-col flex-1 p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="text-base font-semibold leading-snug" style={{ color: '#0a2e1f' }}>
-                        {service.name}
-                      </h3>
-                      <ArrowRight
-                        className="h-4 w-4 flex-shrink-0 mt-0.5"
-                        style={{ color: '#c9a227' }}
-                      />
-                    </div>
-
+                  {/* Bottom text */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                    <h3 className="text-white font-bold text-sm sm:text-base leading-tight">
+                      {service.name}
+                    </h3>
                     {service.description && (
-                      <p className="mt-2 text-sm leading-relaxed flex-1 line-clamp-2" style={{ color: '#6b7280' }}>
+                      <p className="mt-1 text-white/60 text-xs leading-snug line-clamp-2 hidden sm:block">
                         {service.description}
                       </p>
                     )}
-
-                    <div className="mt-4 flex items-center justify-between border-t pt-4" style={{ borderColor: '#f0e8d0' }}>
-                      <span className="text-base font-bold" style={{ color: '#0a2e1f' }}>
-                        {formatPrice(service.price)}
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-black transition-opacity group-hover:opacity-90"
+                        style={{ background: 'linear-gradient(135deg,#f0d878,#c9a227)' }}
+                      >
+                        <Calendar className="h-2.5 w-2.5" /> Book Now
                       </span>
-                      <span className="flex items-center gap-1.5 text-sm" style={{ color: '#9a8060' }}>
-                        <Clock className="h-3.5 w-3.5" />
-                        {service.duration_minutes} min
+                      <span className="text-sm font-bold" style={{ color: '#f0d878' }}>
+                        {formatPrice(service.price)}
                       </span>
                     </div>
                   </div>
