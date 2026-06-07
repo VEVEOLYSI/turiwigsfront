@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, MailCheck } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
 import { loginThunk, fetchMeThunk } from '@/store/slices/auth.slice';
 import { Input } from '@/components/ui/Input';
@@ -16,6 +16,8 @@ export function LoginForm() {
   const { loading, error } = useAppSelector((s) => s.auth);
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPwd, setShowPwd] = useState(false);
+
+  const isUnverified = error === 'EMAIL_NOT_VERIFIED';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +64,33 @@ export function LoginForm() {
         }
       />
 
-      {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
+      {/* Unverified email — special prompt */}
+      {isUnverified && (
+        <div className="rounded-xl border p-4 space-y-2"
+          style={{ background: 'rgba(201,162,39,0.08)', borderColor: 'rgba(201,162,39,0.3)' }}>
+          <div className="flex items-center gap-2">
+            <MailCheck className="h-4 w-4 flex-shrink-0" style={{ color: '#c9a227' }} />
+            <p className="text-sm font-semibold" style={{ color: '#0a2e1f' }}>
+              Email not verified
+            </p>
+          </div>
+          <p className="text-sm" style={{ color: '#6b7280' }}>
+            Please verify your email before signing in.
+          </p>
+          <Link
+            href={`/auth/verify-email${form.email ? `?email=${encodeURIComponent(form.email)}` : ''}`}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold underline underline-offset-2 transition-opacity hover:opacity-70"
+            style={{ color: '#0a2e1f' }}
+          >
+            Enter verification code →
+          </Link>
+        </div>
+      )}
+
+      {/* Generic error */}
+      {error && !isUnverified && (
+        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
+      )}
 
       <div className="flex justify-end">
         <Link href="/auth/forgot-password" className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">

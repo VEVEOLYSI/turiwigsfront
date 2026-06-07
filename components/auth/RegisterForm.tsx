@@ -38,8 +38,8 @@ export function RegisterForm() {
     }
     const result = await dispatch(registerThunk(form));
     if (registerThunk.fulfilled.match(result)) {
-      toast.success('Account created! Please sign in.');
-      router.push('/auth/login');
+      toast.success('Account created! Check your email for a 6-digit code.');
+      router.push(`/auth/verify-email?email=${encodeURIComponent(form.email)}`);
     }
   };
 

@@ -3,7 +3,7 @@ import type { ApiResponse, Session, AuthUser } from '@/types';
 
 export const authApi = {
   register: (data: { email: string; password: string; name: string }) =>
-    client.post<ApiResponse<{ userId: string }>>('/auth/register', data),
+    client.post<ApiResponse<{ message: string }>>('/auth/register', data),
 
   login: (data: { email: string; password: string }) =>
     client.post<ApiResponse<{ session: Session }>>('/auth/login', data),
@@ -18,6 +18,12 @@ export const authApi = {
 
   resetPassword: (password: string) =>
     client.post('/auth/reset-password', { password }),
+
+  verifyOtp: (email: string, otp: string) =>
+    client.post<ApiResponse<{ message: string }>>('/auth/verify-otp', { email, otp }),
+
+  resendVerification: (email: string) =>
+    client.post<ApiResponse<{ message: string }>>('/auth/resend-verification', { email }),
 
   me: () => client.get<ApiResponse<AuthUser>>('/auth/me'),
 };
