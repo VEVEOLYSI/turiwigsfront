@@ -14,6 +14,7 @@ import { ProgressRow } from '@/components/dashboard/charts/ProgressRow';
 import { formatPrice } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 
 const GOLD   = '#c9a227';
 const DARK   = '#0a2e1f';
@@ -75,6 +76,8 @@ export default function StaffOverviewPage() {
   const [attendance, setAttendance]   = useState<AttendanceRecord | null>(null);
   const [loading, setLoading]         = useState(true);
   const [clockLoading, setClockLoading] = useState(false);
+  const [showClockOutModal, setShowClockOutModal] = useState(false);
+  const [clockOutNote, setClockOutNote] = useState('');
   const [updatingId, setUpdatingId]   = useState<string | null>(null);
   const [now, setNow]                 = useState(new Date());
 
@@ -107,6 +110,8 @@ export default function StaffOverviewPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  useRealtimeRefresh(['service_bookings', 'attendance_records', 'commission_earnings'], load);
+
   const handleClockIn = async () => {
     setClockLoading(true);
     try {
@@ -120,14 +125,23 @@ export default function StaffOverviewPage() {
     }
   };
 
-  const handleClockOut = async () => {
+  const handleClockOut = () => {
+    setClockOutNote('');
+    setShowClockOutModal(true);
+  };
+
+  const submitClockOut = async (note?: string) => {
     setClockLoading(true);
+    setShowClockOutModal(false);
     try {
-      const res = await hrApi.clockOut();
+      const res = await hrApi.clockOut(note);
       setAttendance(res.data.data);
       toast.success('Clocked out. Have a great day!');
-    } catch {
-      toast.error('Clock-out failed');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Clock-out failed';
+      toast.error(msg);
+      // Re-show modal if backend says note is required
+      if (msg.includes('reason')) setShowClockOutModal(true);
     } finally {
       setClockLoading(false);
     }
@@ -190,6 +204,46 @@ export default function StaffOverviewPage() {
 
   return (
     <div className="space-y-5 pb-8">
+
+      {/* ── Clock-out modal ───────────────────────────────────────── */}
+      {showClockOutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.5)' }}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: `${ORANGE}18` }}>
+                <Coffee className="h-5 w-5" style={{ color: ORANGE }} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-neutral-900">Clock Out</p>
+                <p className="text-xs text-neutral-500 mt-0.5">Leaving before closing time? A note is required.</p>
+              </div>
+            </div>
+            <textarea
+              rows={3}
+              value={clockOutNote}
+              onChange={(e) => setClockOutNote(e.target.value)}
+              placeholder="Reason for early departure (required if before closing time)…"
+              className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-neutral-400"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowClockOutModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-50">
+                Cancel
+              </button>
+              <button
+                onClick={() => submitClockOut(clockOutNote || undefined)}
+                disabled={clockLoading}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: RED }}>
+                {clockLoading ? 'Clocking out…' : 'Confirm Clock Out'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Header + clock ────────────────────────────────────────── */}
       <div className="rounded-2xl p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"

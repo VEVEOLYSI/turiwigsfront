@@ -18,6 +18,7 @@ import { DonutChart } from '@/components/dashboard/charts/DonutChart';
 import { ProgressRow } from '@/components/dashboard/charts/ProgressRow';
 import { formatPrice, formatDate } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 
 // ─── Colours ──────────────────────────────────────────────────────────────────
 const GOLD    = '#c9a227';
@@ -168,6 +169,11 @@ export default function AdminOverviewPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useRealtimeRefresh(
+    ['orders', 'service_bookings', 'attendance_records', 'inventory_items', 'staff_leaves'],
+    () => load(true),
+  );
 
   const dayName = now.toLocaleDateString('en-KE', { weekday: 'long' });
   const dateStr = now.toLocaleDateString('en-KE', { day: 'numeric', month: 'long', year: 'numeric' });

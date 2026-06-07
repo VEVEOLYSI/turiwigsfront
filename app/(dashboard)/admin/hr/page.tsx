@@ -6,6 +6,7 @@ import { hrAdminApi } from '@/api/erp.api';
 import { formatDate } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 
 const GREEN = '#10b981'; const RED = '#ef4444'; const ORANGE = '#f97316';
 const BLUE = '#3b82f6'; const GOLD = '#c9a227';
@@ -37,6 +38,8 @@ export default function AdminHRPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useRealtimeRefresh(['staff_leaves', 'attendance_records', 'shifts'], load);
 
   const handleLeaveDecision = async (id: string, approved: boolean, reason?: string) => {
     try {

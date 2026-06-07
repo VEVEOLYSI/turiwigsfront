@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { BookingsTable } from '@/components/dashboard/BookingsTable';
 import { adminApi } from '@/api/admin.api';
 import { PageSpinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
 import type { Booking, BookingStatus } from '@/types';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 
 const STATUS_FILTERS: { label: string; value: BookingStatus | '' }[] = [
   { label: 'All', value: '' },
@@ -23,16 +24,22 @@ export default function StaffBookingsPage() {
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState<BookingStatus | ''>('');
   const limit = 15;
+  const pageRef = useRef(page);
+  const filterRef = useRef(statusFilter);
+  pageRef.current = page;
+  filterRef.current = statusFilter;
 
-  const fetch = (p = page) => {
+  const fetch = useCallback((p = pageRef.current) => {
     setLoading(true);
-    adminApi.listBookings({ page: p, limit, status: statusFilter || undefined })
+    adminApi.listBookings({ page: p, limit, status: filterRef.current || undefined })
       .then(({ data }) => { setBookings(data.data); setTotal(data.meta.total); })
       .finally(() => setLoading(false));
-  };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => { fetch(1); setPage(1); }, [statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { fetch(page); }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetch(1); setPage(1); }, [statusFilter, fetch]);
+  useEffect(() => { fetch(page); }, [page, fetch]);
+
+  useRealtimeRefresh(['service_bookings'], () => fetch(pageRef.current));
 
   const totalPages = Math.ceil(total / limit);
 

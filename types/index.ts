@@ -82,12 +82,36 @@ export interface Service {
 }
 
 export interface ServiceSlot {
-  id: string;
+  id: string | null;
   slot_date: string;
   start_time: string;
   end_time: string;
   capacity: number;
   booked_count: number;
+}
+
+export interface StaffScheduleDay {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+}
+
+export interface StaffSchedule {
+  id: string;
+  staff_id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+}
+
+export interface BusinessSettings {
+  id: string;
+  business_start_time: string;
+  business_end_time: string;
+  slot_interval_minutes: number;
+  working_days: number[];
+  staff_orders_enabled: boolean;
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────

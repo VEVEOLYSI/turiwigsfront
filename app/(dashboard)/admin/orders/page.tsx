@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { OrdersTable } from '@/components/dashboard/OrdersTable';
 import { adminApi } from '@/api/admin.api';
 import { PageSpinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
 import type { Order, OrderStatus } from '@/types';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 
 const STATUS_FILTERS: { label: string; value: OrderStatus | '' }[] = [
   { label: 'All', value: '' },
@@ -25,20 +26,28 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('');
   const limit = 15;
+  const pageRef = useRef(page);
+  const filterRef = useRef(statusFilter);
+  const searchRef = useRef(search);
+  pageRef.current = page;
+  filterRef.current = statusFilter;
+  searchRef.current = search;
 
-  const fetch = (p = page) => {
+  const fetch = useCallback((p = pageRef.current) => {
     setLoading(true);
     adminApi.listOrders({
       page: p, limit,
-      search: search || undefined,
-      status: statusFilter || undefined,
+      search: searchRef.current || undefined,
+      status: filterRef.current || undefined,
     })
       .then(({ data }) => { setOrders(data.data); setTotal(data.meta.total); })
       .finally(() => setLoading(false));
-  };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => { fetch(1); setPage(1); }, [statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { fetch(page); }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetch(1); setPage(1); }, [statusFilter, fetch]);
+  useEffect(() => { fetch(page); }, [page, fetch]);
+
+  useRealtimeRefresh(['orders'], () => fetch(pageRef.current));
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

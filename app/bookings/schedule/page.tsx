@@ -35,7 +35,7 @@ export default function SchedulePage() {
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null | undefined>(null);
   const [slots, setSlots] = useState<ServiceSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
@@ -81,7 +81,7 @@ export default function SchedulePage() {
 
   function handleContinue() {
     if (!selectedDate || !selectedTime) return;
-    dispatch(setDateTime({ date: selectedDate, time: selectedTime, slotId: selectedSlotId }));
+    dispatch(setDateTime({ date: selectedDate, time: selectedTime, slotId: selectedSlotId ?? null }));
     router.push('/bookings/summary');
   }
 
@@ -261,10 +261,12 @@ export default function SchedulePage() {
               <div className="grid grid-cols-3 gap-2">
                 {slots.map((slot) => {
                   const isBooked = slot.booked_count >= slot.capacity;
-                  const isSelected = selectedSlotId === slot.id;
+                  // Dynamic slots have id=null; use start_time as the key/identifier
+                  const slotKey = slot.id ?? slot.start_time;
+                  const isSelected = selectedTime === slot.start_time;
                   return (
                     <button
-                      key={slot.id}
+                      key={slotKey}
                       onClick={() => {
                         if (isBooked) return;
                         setSelectedSlotId(slot.id);

@@ -14,8 +14,8 @@ export const hrApi = {
   clockIn: (branchId?: string) =>
     client.post<ApiResponse<AttendanceRecord>>('/hr/attendance/clock-in', { branchId }),
 
-  clockOut: () =>
-    client.post<ApiResponse<AttendanceRecord>>('/hr/attendance/clock-out'),
+  clockOut: (note?: string) =>
+    client.post<ApiResponse<AttendanceRecord>>('/hr/attendance/clock-out', { note }),
 
   getMyAttendance: (params?: { startDate?: string; endDate?: string; page?: number; limit?: number }) =>
     client.get<ApiResponse<AttendanceRecord[]>>('/hr/attendance/mine', { params }),

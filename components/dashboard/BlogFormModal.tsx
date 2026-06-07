@@ -19,7 +19,7 @@ interface Props {
   onSaved: (post: BlogPost) => void;
 }
 
-const EMPTY = { title: '', slug: '', excerpt: '', content: '', coverImage: '', isPublished: false };
+const EMPTY = { title: '', slug: '', excerpt: '', content: '', coverImage: '', isPublished: true };
 
 const fieldStyle = {
   background: '#faf6ed',
@@ -202,7 +202,7 @@ export function BlogFormModal({ open, onClose, post, onSaved }: Props) {
             onChange={(e) => set('isPublished', e.target.checked)}
             className="h-4 w-4 rounded border-neutral-300" style={{ accentColor: '#22c55e' }} />
           <span className="text-sm font-medium text-neutral-700">
-            Publish immediately
+            Published
             <span className="ml-1.5 text-xs font-normal text-neutral-400">(uncheck to save as draft)</span>
           </span>
         </label>

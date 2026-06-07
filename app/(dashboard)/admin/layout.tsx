@@ -8,7 +8,7 @@ import { PageSpinner } from '@/components/ui/Spinner';
 import {
   LayoutDashboard, ShoppingBag, Package, Users, Scissors,
   Layers, DollarSign, BarChart2, ClipboardList, Truck, Briefcase,
-  Cpu, Calendar, FileText,
+  Cpu, Calendar, FileText, CalendarClock, UserCog,
 } from 'lucide-react';
 import type { NavItem } from '@/components/dashboard/DashboardShell';
 
@@ -18,8 +18,9 @@ const NAV: NavItem[] = [
   { label: 'Analytics',   href: '/admin/analytics',  icon: BarChart2 },
 
   // ─ Operations
-  { label: 'Orders',      href: '/admin/orders',     icon: ShoppingBag },
-  { label: 'Bookings',    href: '/admin/bookings',   icon: Calendar },
+  { label: 'Orders',      href: '/admin/orders',      icon: ShoppingBag },
+  { label: 'Bookings',    href: '/admin/bookings',    icon: Calendar },
+  { label: 'Scheduling',  href: '/admin/scheduling',  icon: CalendarClock },
   { label: 'Products',    href: '/admin/products',   icon: Package },
   { label: 'Services',    href: '/admin/services',   icon: Scissors },
   { label: 'Blog',        href: '/admin/blog',        icon: FileText },
@@ -31,7 +32,8 @@ const NAV: NavItem[] = [
   { label: 'Assets',      href: '/admin/assets',     icon: Cpu },
 
   // ─ People
-  { label: 'HR / Staff',  href: '/admin/hr',         icon: Briefcase },
+  { label: 'Staff Mgmt',  href: '/admin/staff',      icon: UserCog },
+  { label: 'HR / Shifts', href: '/admin/hr',         icon: Briefcase },
   { label: 'Payroll',     href: '/admin/payroll',    icon: ClipboardList },
   { label: 'Users',       href: '/admin/users',      icon: Users },
 ];
