@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button';
 import type { Order } from '@/types';
 
 const statusVariant: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
-  pending: 'warning', paid: 'info', processing: 'info',
+  pending: 'warning', paid: 'info', processing: 'info', packed: 'info',
   shipped: 'info', delivered: 'success', cancelled: 'danger', refunded: 'danger',
 };
 
@@ -40,7 +40,9 @@ export default function OrdersPage() {
               <div className="space-y-1">
                 <p className="font-semibold text-neutral-900">{order.order_number}</p>
                 <p className="text-xs text-neutral-400">{formatDate(order.created_at)}</p>
-                <Badge variant={statusVariant[order.order_status] ?? 'default'}>{order.order_status}</Badge>
+                <Badge variant={statusVariant[order.order_status] ?? 'default'}>
+                  {order.order_status === 'shipped' ? 'In Transit' : order.order_status}
+                </Badge>
               </div>
               <p className="text-base font-bold text-neutral-900">{formatPrice(order.total_amount)}</p>
             </Link>

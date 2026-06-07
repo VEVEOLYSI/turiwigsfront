@@ -3,19 +3,104 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Clock, PackageCheck, Truck, CheckCircle2, Package } from 'lucide-react';
 import { ordersApi } from '@/api/orders.api';
 import { formatPrice, formatDate } from '@/utils/formatters';
 import { Badge } from '@/components/ui/Badge';
 import { PageSpinner } from '@/components/ui/Spinner';
 import { PayButton } from '@/components/payments/PayButton';
 import toast from 'react-hot-toast';
-import type { Order } from '@/types';
+import type { Order, OrderStatus } from '@/types';
+
+// ─── Delivery timeline ────────────────────────────────────────────────────────
+
+const STAGES: { status: OrderStatus; label: string; desc: string; icon: React.ElementType }[] = [
+  { status: 'processing', label: 'Processing',  desc: 'We\'re preparing your order',       icon: Clock        },
+  { status: 'packed',     label: 'Packed',       desc: 'Your wig is packed & ready to ship', icon: PackageCheck },
+  { status: 'shipped',    label: 'In Transit',   desc: 'Your order is on its way',           icon: Truck        },
+  { status: 'delivered',  label: 'Delivered',    desc: 'Order delivered — enjoy!',            icon: CheckCircle2 },
+];
+
+const STAGE_ORDER = ['processing', 'packed', 'shipped', 'delivered'];
+
+function stageIndex(status: OrderStatus) {
+  return STAGE_ORDER.indexOf(status);
+}
+
+function DeliveryTimeline({ status }: { status: OrderStatus }) {
+  const currentIdx = stageIndex(status);
+  if (currentIdx === -1) return null;
+
+  return (
+    <div className="rounded-2xl border p-5 space-y-4" style={{ borderColor: '#e0d0b0', background: '#fff' }}>
+      <h2 className="text-sm font-semibold" style={{ color: '#0a2e1f' }}>Delivery Progress</h2>
+
+      <div className="space-y-0">
+        {STAGES.map((stage, i) => {
+          const done = currentIdx > i;
+          const current = currentIdx === i;
+          const pending = currentIdx < i;
+          return (
+            <div key={stage.status} className="flex gap-3">
+              {/* Icon column */}
+              <div className="flex flex-col items-center">
+                <div
+                  className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+                  style={
+                    done
+                      ? { background: '#0a2e1f' }
+                      : current
+                      ? { background: 'linear-gradient(135deg,#c9a227,#f0d878)', boxShadow: '0 0 0 3px rgba(201,162,39,0.2)' }
+                      : { background: '#f3f4f6', border: '1px solid #e5e7eb' }
+                  }
+                >
+                  <stage.icon
+                    className="h-3.5 w-3.5"
+                    style={{ color: done ? '#f0d878' : current ? '#0a2e1f' : '#d1d5db' }}
+                  />
+                </div>
+                {i < STAGES.length - 1 && (
+                  <div
+                    className="w-0.5 flex-1 my-1"
+                    style={{ background: done ? '#0a2e1f' : '#e5e7eb', minHeight: 20 }}
+                  />
+                )}
+              </div>
+
+              {/* Text column */}
+              <div className="pb-4 pt-1 min-w-0">
+                <p
+                  className="text-sm font-semibold leading-none"
+                  style={{ color: done || current ? '#0a2e1f' : '#9ca3af' }}
+                >
+                  {stage.label}
+                  {current && (
+                    <span className="ml-2 text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
+                      style={{ background: 'rgba(201,162,39,0.15)', color: '#c9a227' }}>
+                      Current
+                    </span>
+                  )}
+                </p>
+                <p className="mt-0.5 text-xs" style={{ color: pending ? '#d1d5db' : '#6b7280' }}>
+                  {stage.desc}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Status badge helpers ─────────────────────────────────────────────────────
 
 const statusVariant: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
-  pending: 'warning', paid: 'info', processing: 'info',
+  pending: 'warning', paid: 'info', processing: 'info', packed: 'info',
   shipped: 'info', delivered: 'success', cancelled: 'danger', refunded: 'danger',
 };
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -42,57 +127,91 @@ export default function OrderDetailPage() {
   if (loading) return <PageSpinner />;
   if (!order) return <div className="p-10 text-center text-neutral-500">Order not found</div>;
 
+  const showTimeline = ['processing', 'packed', 'shipped', 'delivered'].includes(order.order_status);
+
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-      <Link href="/account/orders" className="mb-6 inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors">
+    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6" style={{ minHeight: '100vh', background: '#faf6ed' }}>
+      <Link href="/account/orders"
+        className="mb-6 inline-flex items-center gap-2 text-sm transition-colors"
+        style={{ color: '#9a8060' }}>
         <ArrowLeft className="h-4 w-4" /> Back to Orders
       </Link>
 
-      <div className="space-y-5">
-        <div className="flex items-start justify-between">
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-start justify-between rounded-2xl border p-5"
+          style={{ borderColor: '#e0d0b0', background: '#fff' }}>
           <div>
-            <h1 className="text-xl font-bold text-neutral-900">{order.order_number}</h1>
-            <p className="text-sm text-neutral-400 mt-0.5">{formatDate(order.created_at)}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <Package className="h-4 w-4" style={{ color: '#c9a227' }} />
+              <h1 className="text-lg font-bold" style={{ color: '#0a2e1f' }}>{order.order_number}</h1>
+            </div>
+            <p className="text-xs" style={{ color: '#9a8060' }}>{formatDate(order.created_at)}</p>
           </div>
-          <Badge variant={statusVariant[order.order_status] ?? 'default'} className="text-sm px-3 py-1">
-            {order.order_status}
+          <Badge variant={statusVariant[order.order_status] ?? 'default'}>
+            {order.order_status === 'shipped' ? 'In Transit' : order.order_status}
           </Badge>
         </div>
 
+        {/* Delivery timeline */}
+        {showTimeline && <DeliveryTimeline status={order.order_status} />}
+
         {/* Items */}
-        <div className="rounded-2xl border border-neutral-200 p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-neutral-900">Items</h2>
+        <div className="rounded-2xl border p-5 space-y-3" style={{ borderColor: '#e0d0b0', background: '#fff' }}>
+          <h2 className="text-sm font-semibold" style={{ color: '#0a2e1f' }}>Items</h2>
           {(order.order_items ?? []).map((item) => (
             <div key={item.id} className="flex items-center justify-between text-sm">
               <div>
-                <p className="font-medium text-neutral-800">{item.product_snapshot.name}</p>
-                {item.product_snapshot.sku && <p className="text-xs text-neutral-400">SKU: {item.product_snapshot.sku}</p>}
+                <p className="font-medium" style={{ color: '#0a2e1f' }}>{item.product_snapshot.name}</p>
+                {item.product_snapshot.sku && (
+                  <p className="text-xs font-mono" style={{ color: '#9a8060' }}>SKU: {item.product_snapshot.sku}</p>
+                )}
               </div>
               <div className="text-right">
-                <p className="font-medium">{formatPrice(item.total_price)}</p>
-                <p className="text-xs text-neutral-400">×{item.quantity} @ {formatPrice(item.unit_price)}</p>
+                <p className="font-semibold" style={{ color: '#0a2e1f' }}>{formatPrice(item.total_price)}</p>
+                <p className="text-xs" style={{ color: '#9a8060' }}>×{item.quantity} @ {formatPrice(item.unit_price)}</p>
               </div>
             </div>
           ))}
         </div>
 
         {/* Totals */}
-        <div className="rounded-2xl border border-neutral-200 p-5 space-y-2 text-sm">
-          <div className="flex justify-between text-neutral-600"><span>Subtotal</span><span>{formatPrice(order.subtotal)}</span></div>
-          {order.discount_amount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatPrice(order.discount_amount)}</span></div>}
-          <div className="flex justify-between text-neutral-600"><span>Shipping</span><span>{formatPrice(order.shipping_amount)}</span></div>
-          <div className="flex justify-between font-bold text-neutral-900 text-base pt-2 border-t border-neutral-100"><span>Total</span><span>{formatPrice(order.total_amount)}</span></div>
+        <div className="rounded-2xl border p-5 space-y-2 text-sm" style={{ borderColor: '#e0d0b0', background: '#fff' }}>
+          <div className="flex justify-between" style={{ color: '#6b7280' }}>
+            <span>Subtotal</span><span>{formatPrice(order.subtotal)}</span>
+          </div>
+          {order.discount_amount > 0 && (
+            <div className="flex justify-between text-green-600">
+              <span>Discount</span><span>-{formatPrice(order.discount_amount)}</span>
+            </div>
+          )}
+          <div className="flex justify-between" style={{ color: '#6b7280' }}>
+            <span>Shipping</span><span>{formatPrice(order.shipping_amount)}</span>
+          </div>
+          <div className="flex justify-between font-bold text-base pt-2 border-t" style={{ color: '#0a2e1f', borderColor: '#f0e8d0' }}>
+            <span>Total</span><span>{formatPrice(order.total_amount)}</span>
+          </div>
         </div>
 
         {/* Pay now if pending */}
         {order.payment_status === 'pending' && order.order_status !== 'cancelled' && (
-          <PayButton orderId={order.id} amount={order.total_amount} amountFormatted={formatPrice(order.total_amount)} label="Complete Payment" onSuccess={() => { toast.success('Payment received!'); router.push('/payment/success'); }} />
+          <PayButton
+            orderId={order.id}
+            amount={order.total_amount}
+            amountFormatted={formatPrice(order.total_amount)}
+            label="Complete Payment"
+            onSuccess={() => { toast.success('Payment received!'); router.push('/payment/success'); }}
+          />
         )}
 
         {/* Cancel */}
         {['pending'].includes(order.order_status) && (
-          <button onClick={handleCancel} disabled={cancelling}
-            className="w-full text-sm text-red-500 hover:text-red-700 text-center py-2 transition-colors disabled:opacity-50">
+          <button
+            onClick={handleCancel}
+            disabled={cancelling}
+            className="w-full text-sm text-center py-2 transition-colors disabled:opacity-50"
+            style={{ color: '#ef4444' }}
+          >
             {cancelling ? 'Cancelling…' : 'Cancel Order'}
           </button>
         )}

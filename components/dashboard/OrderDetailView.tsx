@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { ArrowLeft, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, RefreshCcw, Package, PackageCheck, Truck, CheckCircle2, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { PageSpinner } from '@/components/ui/Spinner';
@@ -13,15 +13,25 @@ import type { Order, OrderStatus, PaymentStatus } from '@/types';
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 
-const ORDER_STATUS_OPTIONS: OrderStatus[] = [
-  'pending', 'processing', 'shipped', 'delivered', 'cancelled',
-];
 const PAYMENT_STATUS_OPTIONS: Exclude<PaymentStatus, 'failed'>[] = ['pending', 'paid', 'refunded'];
 
 const orderVariant: Record<OrderStatus, 'default' | 'warning' | 'info' | 'success' | 'danger'> = {
-  pending: 'warning', paid: 'info', processing: 'info',
+  pending: 'warning', paid: 'info', processing: 'info', packed: 'info',
   shipped: 'info', delivered: 'success', cancelled: 'danger', refunded: 'default',
 };
+
+// Delivery stages shown as a visual stepper
+const DELIVERY_STAGES: { status: OrderStatus; label: string; icon: React.ElementType }[] = [
+  { status: 'processing', label: 'Processing',  icon: Clock        },
+  { status: 'packed',     label: 'Packed',       icon: PackageCheck },
+  { status: 'shipped',    label: 'In Transit',   icon: Truck        },
+  { status: 'delivered',  label: 'Delivered',    icon: CheckCircle2 },
+];
+
+const DELIVERY_ORDER = ['processing', 'packed', 'shipped', 'delivered'];
+function deliveryIndex(status: OrderStatus) {
+  return DELIVERY_ORDER.indexOf(status);
+}
 const paymentVariant: Record<PaymentStatus, 'default' | 'success' | 'warning' | 'danger'> = {
   pending: 'warning', paid: 'success', failed: 'danger', refunded: 'default',
 };
@@ -197,19 +207,82 @@ export function OrderDetailView({ orderId, backHref, canManagePayments }: OrderD
 
         {/* Right: actions panel */}
         <div className="space-y-4">
-          {/* Order status */}
-          <section className="rounded-2xl border border-neutral-100 bg-white shadow-sm p-5 space-y-3">
-            <h2 className="text-sm font-semibold text-neutral-800">Order Status</h2>
-            <select
-              value={order.order_status}
-              onChange={(e) => handleOrderStatus(e.target.value as OrderStatus)}
-              disabled={busy}
-              className="w-full rounded-xl border border-neutral-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 bg-white"
-            >
-              {ORDER_STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+          {/* Delivery stage stepper */}
+          <section className="rounded-2xl border border-neutral-100 bg-white shadow-sm p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-neutral-800">Delivery Status</h2>
+              <Badge variant={orderVariant[order.order_status]}>{order.order_status}</Badge>
+            </div>
+
+            {/* Visual stepper */}
+            {!['cancelled', 'refunded', 'pending', 'paid'].includes(order.order_status) && (
+              <div className="relative flex items-center justify-between">
+                {/* connector line */}
+                <div className="absolute left-0 right-0 top-4 h-0.5 bg-neutral-100 z-0" />
+                <div
+                  className="absolute left-0 top-4 h-0.5 z-0 transition-all duration-500"
+                  style={{
+                    background: 'linear-gradient(90deg,#c9a227,#f0d878)',
+                    width: `${(deliveryIndex(order.order_status) / (DELIVERY_STAGES.length - 1)) * 100}%`,
+                  }}
+                />
+                {DELIVERY_STAGES.map((stage, i) => {
+                  const done = deliveryIndex(order.order_status) > i;
+                  const current = order.order_status === stage.status;
+                  return (
+                    <div key={stage.status} className="relative z-10 flex flex-col items-center gap-1.5">
+                      <div
+                        className="h-8 w-8 rounded-full flex items-center justify-center transition-all"
+                        style={
+                          done || current
+                            ? { background: 'linear-gradient(135deg,#c9a227,#f0d878)', boxShadow: current ? '0 0 0 3px rgba(201,162,39,0.25)' : 'none' }
+                            : { background: '#f3f4f6', border: '1px solid #e5e7eb' }
+                        }
+                      >
+                        <stage.icon className="h-3.5 w-3.5" style={{ color: done || current ? '#0a2e1f' : '#9ca3af' }} />
+                      </div>
+                      <span className="text-[9px] font-semibold text-center leading-tight"
+                        style={{ color: done || current ? '#0a2e1f' : '#9ca3af' }}>
+                        {stage.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* One-click stage advance buttons */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              {DELIVERY_STAGES.filter((s) => s.status !== order.order_status).map((stage) => {
+                const isNext = deliveryIndex(stage.status) === deliveryIndex(order.order_status) + 1;
+                return (
+                  <button
+                    key={stage.status}
+                    onClick={() => handleOrderStatus(stage.status)}
+                    disabled={busy}
+                    className="flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-all disabled:opacity-50"
+                    style={isNext
+                      ? { background: 'linear-gradient(135deg,#0a2e1f,#1e5038)', color: '#f0d878' }
+                      : { background: '#f9fafb', border: '1px solid #e5e7eb', color: '#6b7280' }
+                    }
+                  >
+                    <stage.icon className="h-3 w-3" />
+                    {stage.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Cancel option */}
+            {!['cancelled', 'delivered', 'refunded'].includes(order.order_status) && (
+              <button
+                onClick={() => handleOrderStatus('cancelled')}
+                disabled={busy}
+                className="w-full text-xs text-red-400 hover:text-red-600 transition-colors py-1 disabled:opacity-50"
+              >
+                Cancel Order
+              </button>
+            )}
           </section>
 
           {/* Payment section */}

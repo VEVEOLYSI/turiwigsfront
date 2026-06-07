@@ -1,7 +1,7 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export type UserRole = 'customer' | 'staff' | 'admin';
 export type OrderStatus =
-  | 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered'
+  | 'pending' | 'paid' | 'processing' | 'packed' | 'shipped' | 'delivered'
   | 'cancelled' | 'refunded';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export type BookingStatus =
