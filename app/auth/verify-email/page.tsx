@@ -7,12 +7,15 @@ import Link from 'next/link';
 import { MailCheck, RefreshCw } from 'lucide-react';
 import { authApi } from '@/api/auth.api';
 import { Button } from '@/components/ui/Button';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { setSession } from '@/store/slices/auth.slice';
 import toast from 'react-hot-toast';
 
 // ─── Inner component (needs Suspense because it calls useSearchParams) ────────
 
 function VerifyEmailForm() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const params = useSearchParams();
   const email = params.get('email') ?? '';
 
@@ -79,9 +82,10 @@ function VerifyEmailForm() {
     setSubmitting(true);
     setError('');
     try {
-      await authApi.verifyOtp(email, otp);
-      toast.success('Email verified! You can now sign in.');
-      router.push('/auth/login');
+      const { data } = await authApi.verifyOtp(email, otp);
+      dispatch(setSession(data.data.session));
+      toast.success('Welcome to Tiuri! Your account is now active.');
+      router.push('/');
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error
@@ -204,11 +208,19 @@ function VerifyEmailForm() {
         </button>
       </div>
 
-      <p className="text-center text-sm">
-        <Link href="/auth/login" style={{ color: '#0a2e1f' }} className="hover:underline">
-          ← Back to sign in
-        </Link>
-      </p>
+      <div className="text-center text-sm space-y-1.5">
+        <p>
+          <Link href="/auth/login" style={{ color: '#0a2e1f' }} className="hover:underline">
+            ← Back to sign in
+          </Link>
+        </p>
+        <p style={{ color: '#9ca3af' }}>
+          Wrong email?{' '}
+          <Link href="/auth/register" style={{ color: '#0a2e1f' }} className="font-semibold hover:underline">
+            Sign up again
+          </Link>
+        </p>
+      </div>
     </form>
   );
 }
