@@ -13,7 +13,12 @@ export const bookingsApi = {
     scheduledDate: string;
     scheduledTime: string;
     notes?: string;
-  }) => client.post<ApiResponse<{ id: string; booking_number: string }>>('/bookings', data),
+  }) => client.post<ApiResponse<{
+    id: string;
+    booking_number: string;
+    deposit_amount: number;
+    balance_amount: number;
+  }>>('/bookings', data),
 
   cancel: (id: string, reason?: string) =>
     client.post(`/bookings/${id}/cancel`, { reason }),

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Play, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { adminApi } from '@/api/admin.api';
 import type { Booking, BookingStatus } from '@/types';
@@ -40,6 +41,32 @@ export function BookingsTable({ bookings, onBookingUpdated }: BookingsTableProps
     }
   };
 
+  const handleStart = async (id: string) => {
+    setBusy(id);
+    try {
+      const { data } = await adminApi.startBooking(id);
+      onBookingUpdated(data.data);
+      toast.success('Service started');
+    } catch {
+      toast.error('Could not start booking');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleComplete = async (id: string) => {
+    setBusy(id);
+    try {
+      const { data } = await adminApi.completeBooking(id);
+      onBookingUpdated(data.data);
+      toast.success('Service completed — slot freed');
+    } catch {
+      toast.error('Could not complete booking');
+    } finally {
+      setBusy(null);
+    }
+  };
+
   if (!bookings.length) {
     return <p className="py-12 text-center text-sm text-neutral-400">No bookings found.</p>;
   }
@@ -49,7 +76,7 @@ export function BookingsTable({ bookings, onBookingUpdated }: BookingsTableProps
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-neutral-100 bg-neutral-50/80">
-            {['Booking #', 'Service', 'Date', 'Time', 'Status'].map((h) => (
+            {['Booking #', 'Service', 'Date', 'Time', 'Status', 'Actions'].map((h) => (
               <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-400">
                 {h}
               </th>
@@ -84,6 +111,28 @@ export function BookingsTable({ bookings, onBookingUpdated }: BookingsTableProps
                     <option key={s} value={s}>{s.replace('_', ' ')}</option>
                   ))}
                 </select>
+              </td>
+              <td className="px-4 py-3">
+                {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                  <button
+                    onClick={() => handleStart(booking.id)}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-80"
+                    style={{ background: '#1e5038' }}
+                    title="Mark as in progress"
+                  >
+                    <Play className="h-3 w-3" /> Start
+                  </button>
+                )}
+                {booking.status === 'in_progress' && (
+                  <button
+                    onClick={() => handleComplete(booking.id)}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-80"
+                    style={{ background: '#c9a227' }}
+                    title="Mark as completed and free the slot"
+                  >
+                    <CheckCircle className="h-3 w-3" /> Done
+                  </button>
+                )}
               </td>
             </tr>
           ))}

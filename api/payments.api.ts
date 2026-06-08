@@ -37,6 +37,9 @@ export interface CheckoutData {
 }
 
 export const paymentsApi = {
+  getPublicKey: () =>
+    client.get<ApiResponse<{ publicKey: string }>>('/payments/public-key'),
+
   // Redirect / hosted page flow — works for both card and M-Pesa
   initialize: (data: { orderId?: string; bookingId?: string; checkout?: CheckoutData }) =>
     client.post<ApiResponse<{
@@ -47,9 +50,13 @@ export const paymentsApi = {
     }>>('/payments/paystack/initialize', data),
 
   verify: (reference: string) =>
-    client.get<ApiResponse<{ verified: boolean; status: string; reference: string }>>(
-      `/payments/paystack/verify/${reference}`
-    ),
+    client.get<ApiResponse<{
+      verified: boolean;
+      status: string;
+      reference: string;
+      bookingId?: string;
+      orderId?: string;
+    }>>(`/payments/paystack/verify/${reference}`),
 
   // Card charge — accepts either existing orderId/bookingId or checkout cart data
   charge: (data: {

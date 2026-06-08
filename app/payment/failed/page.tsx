@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { XCircle } from 'lucide-react';
@@ -9,6 +9,18 @@ import { Button } from '@/components/ui/Button';
 function PaymentFailedContent() {
   const searchParams = useSearchParams();
   const reference = searchParams.get('reference');
+  const [isBooking, setIsBooking] = useState(false);
+
+  useEffect(() => {
+    const savedBookingId = sessionStorage.getItem('pg_booking_id');
+    if (savedBookingId) {
+      setIsBooking(true);
+      // Clean up
+      sessionStorage.removeItem('pg_booking_id');
+      sessionStorage.removeItem('pg_booking_number');
+      sessionStorage.removeItem('pg_reference');
+    }
+  }, []);
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
@@ -18,7 +30,7 @@ function PaymentFailedContent() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-neutral-900">Payment Failed</h1>
-          <p className="mt-2 text-neutral-500">
+          <p className="mt-2 text-neutral-500 text-sm">
             Something went wrong with your payment. No money was charged.
           </p>
           {reference && (
@@ -26,12 +38,30 @@ function PaymentFailedContent() {
           )}
         </div>
         <div className="flex flex-col gap-3">
-          <Link href="/checkout">
-            <Button fullWidth>Try Again</Button>
-          </Link>
-          <Link href="/cart">
-            <Button fullWidth variant="secondary">Back to Cart</Button>
-          </Link>
+          {isBooking ? (
+            <>
+              <Link href="/services">
+                <Button
+                  fullWidth
+                  style={{ background: '#0a2e1f', color: '#fff', border: 'none' }}
+                >
+                  Try Booking Again
+                </Button>
+              </Link>
+              <Link href="/account/bookings">
+                <Button fullWidth variant="secondary">My Bookings</Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/checkout">
+                <Button fullWidth>Try Again</Button>
+              </Link>
+              <Link href="/cart">
+                <Button fullWidth variant="secondary">Back to Cart</Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>

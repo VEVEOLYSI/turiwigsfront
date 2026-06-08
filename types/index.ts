@@ -174,6 +174,9 @@ export interface Booking {
   scheduled_time: string;
   status: BookingStatus;
   price: number;
+  deposit_amount?: number;
+  balance_amount?: number;
+  deposit_paid_at?: string | null;
   notes?: string;
   services?: { name: string; duration_minutes: number };
   created_at: string;

@@ -105,6 +105,12 @@ export const adminApi = {
   updateBookingStatus: (id: string, status: BookingStatus) =>
     client.put<ApiResponse<Booking>>(`/admin/bookings/${id}/status`, { status }),
 
+  startBooking: (id: string) =>
+    client.post<ApiResponse<Booking>>(`/bookings/${id}/start`),
+
+  completeBooking: (id: string) =>
+    client.post<ApiResponse<Booking>>(`/bookings/${id}/complete`),
+
   // Products — backend routes: POST /products, PUT /products/:id, DELETE /products/:id
   listProducts: (params?: { page?: number; limit?: number; search?: string }) =>
     client.get<PaginatedResponse<Product>>('/products', { params }),
