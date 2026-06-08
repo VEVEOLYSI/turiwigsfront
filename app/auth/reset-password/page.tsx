@@ -63,18 +63,25 @@ function ResetPasswordForm() {
       toast.success('Password updated! You can now sign in.');
       router.push('/auth/login');
     } catch (err: unknown) {
-      // Try to surface the real server message before falling back to generic text
-      const serverMsg =
-        (err as { response?: { data?: { error?: string; message?: string } } })
-          ?.response?.data?.error ??
-        (err as { response?: { data?: { message?: string } } })
-          ?.response?.data?.message ?? '';
+      type ErrShape = {
+        response?: {
+          data?: {
+            error?: string;
+            issues?: { path: string; message: string }[];
+          };
+        };
+      };
+      const res = (err as ErrShape)?.response?.data;
+
+      // If Zod returned field-level issues, show the first one directly
+      const zodMsg = res?.issues?.[0]?.message ?? '';
+      const serverMsg = zodMsg || res?.error || '';
 
       if (/expired/i.test(serverMsg)) {
         toast.error('This reset link has expired. Please request a new one.');
       } else if (/invalid/i.test(serverMsg)) {
         toast.error('Invalid reset link. Please request a new one.');
-      } else if (serverMsg) {
+      } else if (serverMsg && serverMsg !== 'Validation failed') {
         toast.error(serverMsg);
       } else {
         toast.error('Reset failed. Please try again.');
