@@ -83,9 +83,15 @@ function VerifyEmailForm() {
     setError('');
     try {
       const { data } = await authApi.verifyOtp(email, otp);
-      dispatch(setSession(data.data.session));
-      toast.success('Welcome to Tiuri! Your account is now active.');
-      router.push('/');
+      if (data.data.session) {
+        dispatch(setSession(data.data.session));
+        toast.success('Welcome to Tiuri! Your account is now active.');
+        router.push('/');
+      } else {
+        // Email verified but auto-login unavailable — profile exists, just sign in
+        toast.success('Email verified! Please sign in to continue.');
+        router.push('/auth/login');
+      }
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error

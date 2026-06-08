@@ -20,7 +20,7 @@ export const authApi = {
     client.post('/auth/reset-password', { email, token, password }),
 
   verifyOtp: (email: string, otp: string) =>
-    client.post<ApiResponse<{ session: Session }>>('/auth/verify-otp', { email, otp }),
+    client.post<ApiResponse<{ session: Session | null }>>('/auth/verify-otp', { email, otp }),
 
   resendVerification: (email: string) =>
     client.post<ApiResponse<{ message: string }>>('/auth/resend-verification', { email }),
