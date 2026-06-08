@@ -14,6 +14,26 @@ export function useAuth() {
     }
   }, [token, user, dispatch]);
 
+  // Automatically log out when the JWT expires.
+  // The layout's !isAuthenticated check then redirects to /auth/login.
+  useEffect(() => {
+    if (!token) return;
+    try {
+      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const { exp } = JSON.parse(atob(base64)) as { exp?: number };
+      if (!exp) return;
+      const msUntilExpiry = exp * 1000 - Date.now();
+      if (msUntilExpiry <= 0) {
+        dispatch(logoutThunk());
+        return;
+      }
+      const timer = setTimeout(() => dispatch(logoutThunk()), msUntilExpiry);
+      return () => clearTimeout(timer);
+    } catch {
+      // malformed token — the 401 interceptor in client.ts handles it
+    }
+  }, [token, dispatch]);
+
   const logout = () => dispatch(logoutThunk());
 
   return { user, token, loading, error, isAuthenticated: !!token, logout };

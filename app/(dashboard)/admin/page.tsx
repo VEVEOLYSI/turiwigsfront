@@ -5,8 +5,8 @@ import Link from 'next/link';
 import {
   TrendingUp, DollarSign, Calendar, Users, ShoppingBag,
   AlertTriangle, CheckCircle, Clock, Package, CreditCard,
-  ArrowUpRight, ArrowDownRight, Activity, RefreshCw,
-  Layers, BarChart2, FileText, ChevronRight,
+  ArrowUpRight, ArrowDownRight, Activity,
+  Layers, BarChart2, ChevronRight,
 } from 'lucide-react';
 import { analyticsApi } from '@/api/analytics.api';
 import { adminApi } from '@/api/admin.api';
@@ -34,19 +34,90 @@ const STATUS_COLOR: Record<string, string> = {
   in_progress: PURPLE, cancelled: RED, no_show: '#9ca3af',
 };
 
-// ─── Tiny helpers ─────────────────────────────────────────────────────────────
+// ─── Skeuomorphic style tokens ────────────────────────────────────────────────
+
+// Light raised card — looks like thick card-stock floating above parchment
+const CARD_LIGHT: React.CSSProperties = {
+  background: 'linear-gradient(160deg, #ffffff 0%, #faf7f1 100%)',
+  boxShadow: [
+    'inset 0 1px 0 rgba(255,255,255,0.92)',
+    'inset 0 -1px 0 rgba(0,0,0,0.04)',
+    '0 1px 2px rgba(0,0,0,0.08)',
+    '0 4px 10px rgba(0,0,0,0.05)',
+    '0 14px 28px rgba(0,0,0,0.03)',
+  ].join(', '),
+  border: '1px solid rgba(0,0,0,0.07)',
+};
+
+// Dark raised card — embossed emerald leather
+const CARD_DARK: React.CSSProperties = {
+  background: 'linear-gradient(145deg, #0c3020 0%, #143d2a 55%, #0a2618 100%)',
+  boxShadow: [
+    'inset 0 1px 0 rgba(255,255,255,0.08)',
+    'inset 0 -1px 0 rgba(0,0,0,0.35)',
+    '0 4px 14px rgba(0,0,0,0.24)',
+    '0 14px 36px rgba(0,0,0,0.13)',
+    '0 1px 3px rgba(0,0,0,0.18)',
+  ].join(', '),
+  border: '1px solid rgba(201,162,39,0.18)',
+};
+
+// Section card header — inked letterhead
+const SECTION_HEADER: React.CSSProperties = {
+  background: 'linear-gradient(180deg, #faf7f2 0%, #f4efe5 100%)',
+  borderBottom: '1px solid rgba(0,0,0,0.07)',
+  boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.45)',
+};
+
+// Embossed action button
+const ACTION_BTN: React.CSSProperties = {
+  background: 'linear-gradient(160deg, #ffffff 0%, #faf7f1 100%)',
+  boxShadow: [
+    'inset 0 1px 0 rgba(255,255,255,0.9)',
+    'inset 0 -1px 0 rgba(0,0,0,0.04)',
+    '0 2px 4px rgba(0,0,0,0.06)',
+    '0 1px 2px rgba(0,0,0,0.04)',
+  ].join(', '),
+  border: '1px solid rgba(0,0,0,0.08)',
+};
+
+// Physical raised primary button (gold)
+const BTN_GOLD: React.CSSProperties = {
+  background: 'linear-gradient(180deg, #ddb830 0%, #c9a227 45%, #b08b1a 100%)',
+  boxShadow: [
+    '0 4px 10px rgba(0,0,0,0.22)',
+    '0 2px 4px rgba(0,0,0,0.14)',
+    'inset 0 1px 0 rgba(255,255,255,0.32)',
+    'inset 0 -2px 0 rgba(0,0,0,0.18)',
+  ].join(', '),
+  border: '1px solid rgba(0,0,0,0.14)',
+  color: DARK,
+};
+
+// Embossed status badge
+const statusBadge = (color: string): React.CSSProperties => ({
+  background: `${color}14`,
+  color,
+  boxShadow: `inset 0 1px 2px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.55)`,
+  border: `1px solid ${color}28`,
+});
+
+// ─── Tiny helper components ───────────────────────────────────────────────────
 
 function SectionCard({ title, action, actionHref, children, className }: {
   title: string; action?: string; actionHref?: string;
   children: React.ReactNode; className?: string;
 }) {
   return (
-    <div className={cn('bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden', className)}>
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-neutral-50">
-        <h3 className="text-sm font-semibold text-neutral-800">{title}</h3>
+    <div className={cn('rounded-2xl overflow-hidden', className)} style={CARD_LIGHT}>
+      <div className="flex items-center justify-between px-5 py-3.5" style={SECTION_HEADER}>
+        <h3 className="text-sm font-semibold"
+          style={{ color: '#1f2937', textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>
+          {title}
+        </h3>
         {action && actionHref && (
           <Link href={actionHref}
-            className="text-xs font-medium flex items-center gap-0.5"
+            className="text-xs font-semibold flex items-center gap-0.5 transition-opacity hover:opacity-75"
             style={{ color: GOLD }}>
             {action} <ChevronRight className="h-3 w-3" />
           </Link>
@@ -63,38 +134,54 @@ function KpiCard({ label, value, sub, icon: Icon, spark, trend, highlight, color
   highlight?: boolean; color?: string;
 }) {
   const trendUp = (trend ?? 0) >= 0;
+  const c = color ?? GOLD;
   return (
-    <div
-      className="rounded-2xl border p-4 shadow-sm flex flex-col gap-3"
-      style={highlight
-        ? { background: `linear-gradient(135deg, ${DARK} 0%, #143d2a 100%)`, borderColor: `${GOLD}22` }
-        : { background: '#fff', borderColor: '#f0f0f0' }}
-    >
+    <div className="rounded-2xl p-4 flex flex-col gap-3" style={highlight ? CARD_DARK : CARD_LIGHT}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-widest"
-            style={{ color: highlight ? `${GOLD}99` : '#9ca3af' }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest"
+            style={{
+              color: highlight ? `${GOLD}80` : '#9ca3af',
+              textShadow: highlight ? '0 1px 2px rgba(0,0,0,0.4)' : '0 1px 0 rgba(255,255,255,0.7)',
+            }}>
             {label}
           </p>
           <p className="mt-1 text-2xl font-bold truncate"
-            style={{ color: highlight ? '#fff' : '#111827' }}>
+            style={{
+              color: highlight ? '#f5f5f5' : '#111827',
+              textShadow: highlight
+                ? '0 2px 4px rgba(0,0,0,0.4)'
+                : '0 1px 0 rgba(255,255,255,0.8)',
+            }}>
             {value}
           </p>
           {sub && (
-            <p className="mt-0.5 text-[11px]" style={{ color: highlight ? '#ffffff55' : '#9ca3af' }}>
+            <p className="mt-0.5 text-[11px]"
+              style={{ color: highlight ? 'rgba(255,255,255,0.4)' : '#9ca3af' }}>
               {sub}
             </p>
           )}
         </div>
         <div className="flex-shrink-0 rounded-xl p-2.5"
-          style={{ background: highlight ? `${GOLD}28` : `${color ?? GOLD}18` }}>
-          <Icon className="h-5 w-5" style={{ color: color ?? GOLD }} />
+          style={highlight
+            ? {
+                background: `${GOLD}28`,
+                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.08)',
+              }
+            : {
+                background: `${c}16`,
+                boxShadow: `inset 0 1px 2px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.6)`,
+                border: `1px solid ${c}20`,
+              }
+          }>
+          <Icon className="h-5 w-5"
+            style={{ color: c, filter: highlight ? 'drop-shadow(0 0 4px rgba(201,162,39,0.5))' : 'none' }} />
         </div>
       </div>
 
       {spark && spark.length > 1 && (
         <div className="h-8 -mx-1">
-          <SparkLine data={spark} color={highlight ? GOLD : (color ?? GOLD)} id={label} />
+          <SparkLine data={spark} color={highlight ? GOLD : c} id={label} />
         </div>
       )}
 
@@ -103,7 +190,7 @@ function KpiCard({ label, value, sub, icon: Icon, spark, trend, highlight, color
           {trendUp
             ? <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
             : <ArrowDownRight className="h-3.5 w-3.5 text-red-400" />}
-          <span className="text-[11px] font-medium" style={{ color: trendUp ? GREEN : RED }}>
+          <span className="text-[11px] font-semibold" style={{ color: trendUp ? GREEN : RED }}>
             {Math.abs(trend).toFixed(1)}% vs last period
           </span>
         </div>
@@ -112,16 +199,12 @@ function KpiCard({ label, value, sub, icon: Icon, spark, trend, highlight, color
   );
 }
 
-// ─── Status dot ───────────────────────────────────────────────────────────────
 function StatusDot({ status }: { status: string }) {
+  const color = STATUS_COLOR[status] ?? '#9ca3af';
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium capitalize px-2 py-0.5 rounded-full"
-      style={{
-        background: `${STATUS_COLOR[status] ?? '#9ca3af'}18`,
-        color: STATUS_COLOR[status] ?? '#9ca3af',
-      }}>
-      <span className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-        style={{ background: STATUS_COLOR[status] ?? '#9ca3af' }} />
+    <span className="inline-flex items-center gap-1.5 text-xs font-semibold capitalize px-2.5 py-0.5 rounded-full"
+      style={statusBadge(color)}>
+      <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
       {status.replace('_', ' ')}
     </span>
   );
@@ -138,17 +221,15 @@ export default function AdminOverviewPage() {
   const [summary, setSummary]     = useState<DashboardSummary | null>(null);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [loading, setLoading]     = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [now, setNow]             = useState(new Date());
 
-  // Live clock
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(t);
   }, []);
 
-  const load = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true); else setLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     const results = await Promise.allSettled([
       analyticsApi.getRevenue('7d'),
       analyticsApi.getPL('3m'),
@@ -165,7 +246,7 @@ export default function AdminOverviewPage() {
     if (results[4].status === 'fulfilled') setInventory(results[4].value.data.data as SalonInventoryAlerts);
     if (results[5].status === 'fulfilled') setSummary(results[5].value.data.data);
     if (results[6].status === 'fulfilled') setRecentOrders(results[6].value.data.data);
-    setLoading(false); setRefreshing(false);
+    setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -194,7 +275,6 @@ export default function AdminOverviewPage() {
     { label: 'No-show',    value: bookingsByStatus.no_show    ?? 0, color: '#d1d5db' },
   ].filter((s) => s.value > 0);
 
-  const latestPL = pl?.monthly?.[0];
   const revenueDayBars = (revenue?.daily ?? []).slice(-7).map((d) => ({
     label: new Date(d.day).toLocaleDateString('en', { weekday: 'short' }),
     value: d.revenue,
@@ -204,9 +284,17 @@ export default function AdminOverviewPage() {
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Activity className="h-8 w-8 animate-pulse" style={{ color: GOLD }} />
-          <p className="text-sm text-neutral-400">Loading dashboard…</p>
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative h-14 w-14">
+            <div className="absolute inset-0 rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, rgba(201,162,39,0.2) 0%, rgba(201,162,39,0.05) 100%)',
+                boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.12)',
+                border: '1px solid rgba(201,162,39,0.2)',
+              }} />
+            <Activity className="absolute inset-0 m-auto h-6 w-6 animate-pulse" style={{ color: GOLD }} />
+          </div>
+          <p className="text-sm font-medium" style={{ color: '#9ca3af' }}>Loading dashboard…</p>
         </div>
       </div>
     );
@@ -215,37 +303,42 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-5 pb-8">
 
-      {/* ── Header ────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+      {/* ── Page header ───────────────────────────────────────────────── */}
+      <div className="rounded-2xl px-5 py-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between"
+        style={{
+          background: 'linear-gradient(160deg, #ffffff 0%, #faf7f1 100%)',
+          boxShadow: [
+            'inset 0 1px 0 rgba(255,255,255,0.95)',
+            'inset 0 -1px 0 rgba(0,0,0,0.04)',
+            '0 2px 6px rgba(0,0,0,0.06)',
+            '0 8px 20px rgba(0,0,0,0.04)',
+          ].join(', '),
+          border: '1px solid rgba(0,0,0,0.07)',
+        }}>
         <div>
-          <h1 className="text-xl font-bold text-neutral-900">Admin Dashboard</h1>
-          <p className="text-sm text-neutral-400 mt-0.5">
+          <h1 className="text-xl font-bold"
+            style={{ color: '#111827', textShadow: '0 1px 0 rgba(255,255,255,0.8)' }}>
+            Admin Dashboard
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: '#9ca3af' }}>
             {dayName}, {dateStr} · {timeStr}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap mt-2 sm:mt-0">
           {totalAlerts > 0 && (
-            <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
-              style={{ background: `${ORANGE}18`, color: ORANGE }}>
+            <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
+              style={statusBadge(ORANGE)}>
               <AlertTriangle className="h-3 w-3" /> {totalAlerts} alert{totalAlerts > 1 ? 's' : ''}
             </span>
           )}
-          <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
-            style={{ background: `${GREEN}15`, color: GREEN }}>
+          <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
+            style={statusBadge(GREEN)}>
             <CheckCircle className="h-3 w-3" /> System Running
           </span>
-          <button
-            onClick={() => load(true)}
-            disabled={refreshing}
-            className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium border border-neutral-200 text-neutral-600 hover:bg-neutral-50 transition-all"
-          >
-            <RefreshCw className={cn('h-3 w-3', refreshing && 'animate-spin')} />
-            Refresh
-          </button>
         </div>
       </div>
 
-      {/* ── KPI row ───────────────────────────────────────────────── */}
+      {/* ── KPI row ───────────────────────────────────────────────────── */}
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <KpiCard
           label="Revenue Today"
@@ -288,7 +381,7 @@ export default function AdminOverviewPage() {
         />
       </div>
 
-      {/* ── Revenue chart + Booking donut + Quick actions ─────────── */}
+      {/* ── Revenue chart + Booking donut + Quick actions ─────────────── */}
       <div className="grid gap-4 lg:grid-cols-12">
 
         {/* Revenue bars */}
@@ -297,9 +390,10 @@ export default function AdminOverviewPage() {
             {revenueDayBars.length > 0 ? (
               <>
                 <MiniBarChart bars={revenueDayBars} height={72} showValues />
-                <div className="flex justify-between text-[10px] text-neutral-400 pt-1 border-t border-neutral-50">
-                  <span>Total: <strong className="text-neutral-800">{formatPrice(revenue?.total ?? 0)}</strong></span>
-                  <span>Avg/day: <strong className="text-neutral-800">
+                <div className="flex justify-between text-[10px] pt-1 border-t"
+                  style={{ borderColor: 'rgba(0,0,0,0.06)', color: '#9ca3af' }}>
+                  <span>Total: <strong style={{ color: '#374151' }}>{formatPrice(revenue?.total ?? 0)}</strong></span>
+                  <span>Avg/day: <strong style={{ color: '#374151' }}>
                     {formatPrice((revenue?.total ?? 0) / Math.max(revenueDayBars.length, 1))}
                   </strong></span>
                 </div>
@@ -321,7 +415,7 @@ export default function AdminOverviewPage() {
                   thickness={13}
                   center={
                     <div className="text-center">
-                      <p className="text-xl font-bold text-neutral-900">{totalBookingsPeriod}</p>
+                      <p className="text-xl font-bold" style={{ color: '#111827' }}>{totalBookingsPeriod}</p>
                       <p className="text-[10px] text-neutral-400">total</p>
                     </div>
                   }
@@ -331,11 +425,11 @@ export default function AdminOverviewPage() {
                     <div key={seg.label} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: seg.color }} />
-                        <span className="text-neutral-600">{seg.label}</span>
+                        <span style={{ color: '#4b5563' }}>{seg.label}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-neutral-800">{seg.value}</span>
-                        <span className="text-neutral-400">{((seg.value / totalBookingsPeriod) * 100).toFixed(0)}%</span>
+                        <span className="font-bold" style={{ color: '#111827' }}>{seg.value}</span>
+                        <span style={{ color: '#9ca3af' }}>{((seg.value / totalBookingsPeriod) * 100).toFixed(0)}%</span>
                       </div>
                     </div>
                   ))}
@@ -361,19 +455,25 @@ export default function AdminOverviewPage() {
               <Link
                 key={a.href}
                 href={a.href}
-                className="flex flex-col items-center gap-1.5 rounded-xl p-3 border border-neutral-100 hover:border-neutral-200 hover:shadow-sm transition-all text-center"
+                className="flex flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-all duration-100 hover:-translate-y-0.5 active:translate-y-px active:scale-98"
+                style={ACTION_BTN}
               >
-                <div className="rounded-lg p-2" style={{ background: `${a.color}15` }}>
+                <div className="rounded-lg p-2"
+                  style={{
+                    background: `${a.color}14`,
+                    boxShadow: `inset 0 1px 2px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.5)`,
+                    border: `1px solid ${a.color}20`,
+                  }}>
                   <a.icon className="h-4 w-4" style={{ color: a.color }} />
                 </div>
-                <span className="text-[10px] font-medium text-neutral-700 leading-tight">{a.label}</span>
+                <span className="text-[10px] font-semibold leading-tight" style={{ color: '#374151' }}>{a.label}</span>
               </Link>
             ))}
           </div>
         </SectionCard>
       </div>
 
-      {/* ── P&L + Inventory alerts ─────────────────────────────────── */}
+      {/* ── P&L + Inventory alerts ─────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-12">
 
         {/* P&L */}
@@ -381,37 +481,45 @@ export default function AdminOverviewPage() {
           <div className="p-5 space-y-4">
             {pl?.monthly?.length ? (
               <>
-                {/* Summary row */}
                 <div className="grid grid-cols-3 gap-3 text-center">
                   {[
                     { label: 'Revenue', value: pl.totalRevenue, color: GREEN },
                     { label: 'Expenses', value: pl.totalExpenses, color: RED },
                     { label: 'Net Profit', value: pl.netProfit, color: pl.netProfit >= 0 ? BLUE : RED },
                   ].map((m) => (
-                    <div key={m.label} className="rounded-xl p-3" style={{ background: `${m.color}0d` }}>
-                      <p className="text-[10px] text-neutral-500 font-medium">{m.label}</p>
+                    <div key={m.label} className="rounded-xl p-3"
+                      style={{
+                        background: `${m.color}0c`,
+                        boxShadow: `inset 0 1px 3px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.6)`,
+                        border: `1px solid ${m.color}18`,
+                      }}>
+                      <p className="text-[10px] font-semibold" style={{ color: '#6b7280' }}>{m.label}</p>
                       <p className="text-sm font-bold mt-0.5" style={{ color: m.color }}>
                         {formatPrice(m.value)}
                       </p>
                     </div>
                   ))}
                 </div>
-                {/* Monthly breakdown */}
                 <div className="space-y-2.5">
                   {pl.monthly.slice(0, 3).map((m) => (
                     <div key={m.month} className="space-y-1">
-                      <div className="flex justify-between text-[10px] text-neutral-500">
+                      <div className="flex justify-between text-[10px]" style={{ color: '#6b7280' }}>
                         <span>{new Date(m.month).toLocaleDateString('en', { month: 'short', year: 'numeric' })}</span>
-                        <span className={cn('font-medium', Number(m.net_profit) >= 0 ? 'text-emerald-600' : 'text-red-500')}>
+                        <span className={cn('font-semibold', Number(m.net_profit) >= 0 ? 'text-emerald-600' : 'text-red-500')}>
                           {formatPrice(Number(m.net_profit))}
                         </span>
                       </div>
-                      <div className="h-1.5 rounded-full bg-neutral-100 overflow-hidden">
+                      <div className="h-2 rounded-full overflow-hidden"
+                        style={{
+                          background: 'rgba(0,0,0,0.07)',
+                          boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.12)',
+                        }}>
                         <div
                           className="h-full rounded-full"
                           style={{
                             width: `${Math.min((Number(m.total_revenue) / Math.max(pl.totalRevenue, 1)) * 100, 100)}%`,
-                            background: GREEN,
+                            background: `linear-gradient(90deg, ${GREEN}cc, ${GREEN})`,
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
                           }}
                         />
                       </div>
@@ -429,13 +537,18 @@ export default function AdminOverviewPage() {
         <SectionCard title="Inventory Alerts" action="View all" actionHref="/admin/inventory" className="lg:col-span-4">
           <div className="p-4 space-y-2">
             {(inventory?.outOfStock?.length ?? 0) > 0 && (
-              <div className="rounded-xl p-3" style={{ background: `${RED}0d` }}>
-                <p className="text-xs font-semibold" style={{ color: RED }}>
+              <div className="rounded-xl p-3"
+                style={{
+                  background: `${RED}0c`,
+                  boxShadow: `inset 0 1px 3px rgba(0,0,0,0.08)`,
+                  border: `1px solid ${RED}18`,
+                }}>
+                <p className="text-xs font-bold" style={{ color: RED }}>
                   Out of Stock ({inventory!.outOfStock.length})
                 </p>
                 <ul className="mt-1.5 space-y-0.5">
                   {inventory!.outOfStock.slice(0, 3).map((i) => (
-                    <li key={i.id} className="text-[11px] text-neutral-600 truncate">• {i.name}</li>
+                    <li key={i.id} className="text-[11px] truncate" style={{ color: '#374151' }}>• {i.name}</li>
                   ))}
                 </ul>
               </div>
@@ -456,53 +569,39 @@ export default function AdminOverviewPage() {
             ) : (
               <div className="flex flex-col items-center py-5 gap-2">
                 <CheckCircle className="h-6 w-6 text-emerald-400" />
-                <p className="text-xs text-neutral-400">All stock levels healthy</p>
+                <p className="text-xs" style={{ color: '#9ca3af' }}>All stock levels healthy</p>
               </div>
             )}
           </div>
         </SectionCard>
 
-        {/* System alerts */}
+        {/* Operational alerts */}
         <SectionCard title="Operational Alerts" className="lg:col-span-3">
-          <div className="p-4 space-y-3">
+          <div className="p-4 space-y-2.5">
             {[
-              {
-                label: 'Leave Requests',
-                value: summary?.alerts.pendingLeaves ?? 0,
-                href: '/admin/hr',
-                icon: Clock,
-                color: ORANGE,
-                unit: 'pending',
-              },
-              {
-                label: 'Low Stock Items',
-                value: summary?.alerts.lowStockItems ?? 0,
-                href: '/admin/inventory',
-                icon: Package,
-                color: RED,
-                unit: 'items',
-              },
-              {
-                label: 'Asset Maintenance',
-                value: summary?.alerts.assetsNeedingService ?? 0,
-                href: '/admin/assets',
-                icon: AlertTriangle,
-                color: BLUE,
-                unit: 'due soon',
-              },
+              { label: 'Leave Requests', value: summary?.alerts.pendingLeaves ?? 0, href: '/admin/hr', icon: Clock, color: ORANGE, unit: 'pending' },
+              { label: 'Low Stock Items', value: summary?.alerts.lowStockItems ?? 0, href: '/admin/inventory', icon: Package, color: RED, unit: 'items' },
+              { label: 'Asset Maintenance', value: summary?.alerts.assetsNeedingService ?? 0, href: '/admin/assets', icon: AlertTriangle, color: BLUE, unit: 'due soon' },
             ].map((a) => (
               <Link key={a.href} href={a.href}
-                className="flex items-center justify-between p-3 rounded-xl border border-neutral-100 hover:border-neutral-200 transition-all group">
+                className="flex items-center justify-between p-3 rounded-xl transition-all duration-100 hover:-translate-y-0.5 group"
+                style={ACTION_BTN}>
                 <div className="flex items-center gap-2.5">
-                  <div className="rounded-lg p-1.5" style={{ background: `${a.color}15` }}>
+                  <div className="rounded-lg p-1.5"
+                    style={{
+                      background: `${a.color}14`,
+                      boxShadow: `inset 0 1px 2px rgba(0,0,0,0.08)`,
+                      border: `1px solid ${a.color}20`,
+                    }}>
                     <a.icon className="h-3.5 w-3.5" style={{ color: a.color }} />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-neutral-700">{a.label}</p>
-                    <p className="text-[10px] text-neutral-400">{a.unit}</p>
+                    <p className="text-xs font-semibold" style={{ color: '#374151' }}>{a.label}</p>
+                    <p className="text-[10px]" style={{ color: '#9ca3af' }}>{a.unit}</p>
                   </div>
                 </div>
-                <span className="text-lg font-bold" style={{ color: a.value > 0 ? a.color : GREEN }}>
+                <span className="text-lg font-bold"
+                  style={{ color: a.value > 0 ? a.color : GREEN, textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>
                   {a.value}
                 </span>
               </Link>
@@ -511,15 +610,16 @@ export default function AdminOverviewPage() {
         </SectionCard>
       </div>
 
-      {/* ── Staff Performance ──────────────────────────────────────── */}
+      {/* ── Staff Performance ──────────────────────────────────────────── */}
       {staff.length > 0 && (
         <SectionCard title="Staff Performance" action="HR module" actionHref="/admin/hr">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr style={{ background: '#f9fafb', borderBottom: '1px solid #f3f4f6' }}>
+                <tr style={{ background: 'linear-gradient(180deg, #faf7f2 0%, #f4efe5 100%)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
                   {['Staff Member', 'Completed', 'No-shows', 'Revenue', 'Commission (Pending)', 'Commission (Paid)', 'Performance'].map((h) => (
-                    <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+                    <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wide"
+                      style={{ color: '#6b7280', textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>
                       {h}
                     </th>
                   ))}
@@ -531,40 +631,53 @@ export default function AdminOverviewPage() {
                   const rate = Math.round((s.completed / total) * 100);
                   return (
                     <tr key={s.staff_id}
-                      className="border-b border-neutral-50 hover:bg-neutral-50 transition-colors"
-                      style={idx % 2 === 0 ? {} : { background: '#fafafa' }}>
+                      className="border-b transition-colors"
+                      style={{
+                        borderColor: 'rgba(0,0,0,0.05)',
+                        background: idx % 2 === 0 ? '#ffffff' : 'linear-gradient(90deg, #faf7f2 0%, #f8f5ef 100%)',
+                      }}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                            style={{ background: `${GOLD}20`, color: DARK }}>
+                            style={{
+                              background: `linear-gradient(135deg, ${GOLD}28, ${GOLD}12)`,
+                              boxShadow: `inset 0 1px 2px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.5)`,
+                              border: `1px solid ${GOLD}22`,
+                              color: DARK,
+                            }}>
                             {s.staff_name?.[0]?.toUpperCase() ?? '?'}
                           </div>
-                          <span className="font-medium text-neutral-800">{s.staff_name}</span>
+                          <span className="font-semibold" style={{ color: '#1f2937' }}>{s.staff_name}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                          style={{ background: `${GREEN}18`, color: GREEN }}>
+                        <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold"
+                          style={statusBadge(GREEN)}>
                           {s.completed}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-neutral-500">{s.no_shows}</td>
-                      <td className="px-4 py-3 font-semibold text-neutral-800">
+                      <td className="px-4 py-3 font-medium" style={{ color: '#6b7280' }}>{s.no_shows}</td>
+                      <td className="px-4 py-3 font-bold" style={{ color: '#111827' }}>
                         {formatPrice(s.revenue_generated || 0)}
                       </td>
-                      <td className="px-4 py-3">
-                        <span style={{ color: ORANGE }}>{formatPrice(s.pending_commission || 0)}</span>
+                      <td className="px-4 py-3 font-semibold" style={{ color: ORANGE }}>
+                        {formatPrice(s.pending_commission || 0)}
                       </td>
-                      <td className="px-4 py-3">
-                        <span style={{ color: GREEN }}>{formatPrice(s.paid_commission || 0)}</span>
+                      <td className="px-4 py-3 font-semibold" style={{ color: GREEN }}>
+                        {formatPrice(s.paid_commission || 0)}
                       </td>
                       <td className="px-4 py-3 w-32">
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 rounded-full bg-neutral-100 overflow-hidden">
+                          <div className="flex-1 h-2 rounded-full overflow-hidden"
+                            style={{ background: 'rgba(0,0,0,0.07)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' }}>
                             <div className="h-full rounded-full"
-                              style={{ width: `${rate}%`, background: rate >= 80 ? GREEN : rate >= 60 ? ORANGE : RED }} />
+                              style={{
+                                width: `${rate}%`,
+                                background: `linear-gradient(90deg, ${rate >= 80 ? GREEN : rate >= 60 ? ORANGE : RED}cc, ${rate >= 80 ? GREEN : rate >= 60 ? ORANGE : RED})`,
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
+                              }} />
                           </div>
-                          <span className="text-[10px] font-medium text-neutral-500">{rate}%</span>
+                          <span className="text-[10px] font-bold" style={{ color: '#6b7280' }}>{rate}%</span>
                         </div>
                       </td>
                     </tr>
@@ -576,30 +689,35 @@ export default function AdminOverviewPage() {
         </SectionCard>
       )}
 
-      {/* ── Recent orders ──────────────────────────────────────────── */}
+      {/* ── Recent orders ──────────────────────────────────────────────── */}
       <SectionCard title="Recent Orders" action="View all" actionHref="/admin/orders">
         {recentOrders.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr style={{ background: '#f9fafb', borderBottom: '1px solid #f3f4f6' }}>
+                <tr style={{ background: 'linear-gradient(180deg, #faf7f2 0%, #f4efe5 100%)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
                   {['Order', 'Customer', 'Amount', 'Payment', 'Status', 'Date', ''].map((h) => (
-                    <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+                    <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wide"
+                      style={{ color: '#6b7280', textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {recentOrders.map((o) => (
-                  <tr key={o.id} className="border-b border-neutral-50 hover:bg-neutral-50 transition-colors">
-                    <td className="px-4 py-3 font-mono font-semibold text-neutral-700 text-[11px]">
+                {recentOrders.map((o, idx) => (
+                  <tr key={o.id} className="border-b transition-colors"
+                    style={{
+                      borderColor: 'rgba(0,0,0,0.05)',
+                      background: idx % 2 === 0 ? '#ffffff' : 'linear-gradient(90deg, #faf7f2 0%, #f8f5ef 100%)',
+                    }}>
+                    <td className="px-4 py-3 font-mono font-bold text-[11px]" style={{ color: '#374151' }}>
                       {o.order_number}
                     </td>
-                    <td className="px-4 py-3 text-neutral-700 max-w-[120px] truncate">
+                    <td className="px-4 py-3 max-w-[120px] truncate" style={{ color: '#4b5563' }}>
                       {(o as { customer_name?: string }).customer_name ?? '—'}
                     </td>
-                    <td className="px-4 py-3 font-semibold text-neutral-900">
+                    <td className="px-4 py-3 font-bold" style={{ color: '#111827' }}>
                       {formatPrice(o.total_amount)}
                     </td>
                     <td className="px-4 py-3">
@@ -608,12 +726,12 @@ export default function AdminOverviewPage() {
                     <td className="px-4 py-3">
                       <StatusDot status={o.order_status} />
                     </td>
-                    <td className="px-4 py-3 text-neutral-400">
+                    <td className="px-4 py-3" style={{ color: '#9ca3af' }}>
                       {formatDate(o.created_at)}
                     </td>
                     <td className="px-4 py-3">
                       <Link href={`/admin/orders/${o.id}`}
-                        className="text-[10px] font-medium hover:underline"
+                        className="text-[10px] font-bold hover:underline transition-opacity hover:opacity-75"
                         style={{ color: GOLD }}>
                         View
                       </Link>
@@ -625,13 +743,13 @@ export default function AdminOverviewPage() {
           </div>
         ) : (
           <div className="px-5 py-8 text-center">
-            <ShoppingBag className="h-8 w-8 mx-auto mb-2 text-neutral-200" />
-            <p className="text-sm text-neutral-400">No orders yet</p>
+            <ShoppingBag className="h-8 w-8 mx-auto mb-2" style={{ color: '#d1d5db' }} />
+            <p className="text-sm" style={{ color: '#9ca3af' }}>No orders yet</p>
           </div>
         )}
       </SectionCard>
 
-      {/* ── Commission summary bar ─────────────────────────────────── */}
+      {/* ── Commission summary ─────────────────────────────────────────── */}
       {staff.length > 0 && (
         <SectionCard title="Commission Distribution — This Month" action="Manage payroll" actionHref="/admin/payroll">
           <div className="p-5 space-y-3">
@@ -652,7 +770,7 @@ export default function AdminOverviewPage() {
                 );
               })}
             {staff.every((s) => !s.pending_commission) && (
-              <p className="text-sm text-neutral-400 text-center py-2">All commissions paid out</p>
+              <p className="text-sm text-center py-2" style={{ color: '#9ca3af' }}>All commissions paid out</p>
             )}
           </div>
         </SectionCard>
