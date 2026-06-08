@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   Calendar, CheckCircle, Clock, DollarSign,
-  AlertCircle, ChevronRight, Loader2,
+  AlertCircle, Loader2,
   UserCheck, Coffee, Zap, Star,
 } from 'lucide-react';
 import { staffDashboardApi } from '@/api/staff-dashboard.api';
@@ -16,6 +16,7 @@ import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 
+// ─── Colour tokens ────────────────────────────────────────────────────────────
 const GOLD   = '#c9a227';
 const DARK   = '#0a2e1f';
 const GREEN  = '#10b981';
@@ -25,48 +26,97 @@ const ORANGE = '#f97316';
 const PURPLE = '#8b5cf6';
 
 const STATUS_CONFIG: Record<string, { color: string; label: string; bg: string }> = {
-  pending:    { color: ORANGE,  label: 'Pending',     bg: `${ORANGE}18` },
-  confirmed:  { color: BLUE,    label: 'Confirmed',   bg: `${BLUE}18` },
-  in_progress:{ color: PURPLE,  label: 'In Progress', bg: `${PURPLE}18` },
-  completed:  { color: GREEN,   label: 'Completed',   bg: `${GREEN}18` },
-  cancelled:  { color: RED,     label: 'Cancelled',   bg: `${RED}18` },
-  no_show:    { color: '#9ca3af', label: 'No-show',   bg: '#f3f4f6' },
+  pending:    { color: ORANGE,    label: 'Pending',     bg: `${ORANGE}18` },
+  confirmed:  { color: BLUE,      label: 'Confirmed',   bg: `${BLUE}18` },
+  in_progress:{ color: PURPLE,    label: 'In Progress', bg: `${PURPLE}18` },
+  completed:  { color: GREEN,     label: 'Completed',   bg: `${GREEN}18` },
+  cancelled:  { color: RED,       label: 'Cancelled',   bg: `${RED}18` },
+  no_show:    { color: '#9ca3af', label: 'No-show',     bg: '#f3f4f6' },
 };
+
+// ─── Skeuomorphic tokens ──────────────────────────────────────────────────────
+
+const CARD_LIGHT: React.CSSProperties = {
+  background: 'linear-gradient(160deg, #ffffff 0%, #faf7f1 100%)',
+  boxShadow: [
+    'inset 0 1px 0 rgba(255,255,255,0.92)',
+    'inset 0 -1px 0 rgba(0,0,0,0.04)',
+    '0 1px 2px rgba(0,0,0,0.08)',
+    '0 4px 10px rgba(0,0,0,0.05)',
+    '0 14px 28px rgba(0,0,0,0.03)',
+  ].join(', '),
+  border: '1px solid rgba(0,0,0,0.07)',
+};
+
+const CARD_DARK: React.CSSProperties = {
+  background: [
+    'repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px)',
+    'linear-gradient(145deg, #0c3020 0%, #143d2a 55%, #0a2618 100%)',
+  ].join(', '),
+  boxShadow: [
+    'inset 0 1px 0 rgba(255,255,255,0.07)',
+    'inset 0 -1px 0 rgba(0,0,0,0.4)',
+    '0 4px 14px rgba(0,0,0,0.25)',
+    '0 16px 40px rgba(0,0,0,0.14)',
+  ].join(', '),
+  border: '1px solid rgba(201,162,39,0.18)',
+};
+
+const SECTION_HEADER: React.CSSProperties = {
+  background: 'linear-gradient(180deg, #faf7f2 0%, #f4efe5 100%)',
+  borderBottom: '1px solid rgba(0,0,0,0.07)',
+  boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.45)',
+};
+
+const statusBadge = (color: string): React.CSSProperties => ({
+  background: `${color}14`,
+  color,
+  boxShadow: `inset 0 1px 2px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.55)`,
+  border: `1px solid ${color}28`,
+});
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
   return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold capitalize"
-      style={{ color: cfg.color, background: cfg.bg }}>
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: cfg.color }} />
+    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize flex-shrink-0"
+      style={statusBadge(cfg.color)}>
+      <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ background: cfg.color }} />
       {cfg.label}
     </span>
   );
 }
 
-// Quick action to update booking status
 function StatusButton({ status, onClick, disabled }: {
   status: 'in_progress' | 'completed' | 'no_show';
   onClick: () => void;
   disabled: boolean;
 }) {
-  const labels: Record<string, { label: string; color: string }> = {
+  const cfgs: Record<string, { label: string; color: string }> = {
     in_progress: { label: 'Start',    color: PURPLE },
     completed:   { label: 'Complete', color: GREEN  },
     no_show:     { label: 'No-show',  color: RED    },
   };
-  const cfg = labels[status];
+  const cfg = cfgs[status];
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className="rounded-lg px-2.5 py-1 text-[10px] font-semibold border transition-all disabled:opacity-40"
-      style={{ borderColor: `${cfg.color}40`, color: cfg.color, background: `${cfg.color}0d` }}
+      className="rounded-lg px-2.5 py-1 text-[10px] font-bold transition-all disabled:opacity-40 active:scale-95"
+      style={{
+        background: `${cfg.color}12`,
+        color: cfg.color,
+        boxShadow: `inset 0 1px 2px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.55)`,
+        border: `1px solid ${cfg.color}30`,
+      }}
     >
       {cfg.label}
     </button>
   );
 }
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function StaffOverviewPage() {
   const [schedule, setSchedule]       = useState<ScheduleEntry[]>([]);
@@ -140,23 +190,17 @@ export default function StaffOverviewPage() {
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Clock-out failed';
       toast.error(msg);
-      // Re-show modal if backend says note is required
       if (msg.includes('reason')) setShowClockOutModal(true);
     } finally {
       setClockLoading(false);
     }
   };
 
-  const handleStatusUpdate = async (
-    bookingId: string,
-    status: 'in_progress' | 'completed' | 'no_show'
-  ) => {
+  const handleStatusUpdate = async (bookingId: string, status: 'in_progress' | 'completed' | 'no_show') => {
     setUpdatingId(bookingId);
     try {
       await staffDashboardApi.updateBookingStatus(bookingId, status);
-      setSchedule((prev) =>
-        prev.map((b) => (b.id === bookingId ? { ...b, status } : b))
-      );
+      setSchedule((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status } : b)));
       toast.success(`Booking marked as ${status.replace('_', ' ')}`);
     } catch {
       toast.error('Update failed');
@@ -176,7 +220,7 @@ export default function StaffOverviewPage() {
   const isClockedIn  = !!attendance?.clock_in && !attendance?.clock_out;
   const isClockedOut = !!attendance?.clock_in && !!attendance?.clock_out;
 
-  const clockInTime  = attendance?.clock_in
+  const clockInTime = attendance?.clock_in
     ? new Date(attendance.clock_in).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })
     : null;
 
@@ -191,12 +235,21 @@ export default function StaffOverviewPage() {
   const dateStr = now.toLocaleDateString('en-KE', { day: 'numeric', month: 'long' });
   const timeStr = now.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' });
 
+  // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin" style={{ color: GOLD }} />
-          <p className="text-sm text-neutral-400">Loading your workspace…</p>
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative h-14 w-14">
+            <div className="absolute inset-0 rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, rgba(201,162,39,0.18) 0%, rgba(201,162,39,0.05) 100%)',
+                boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.12)',
+                border: '1px solid rgba(201,162,39,0.2)',
+              }} />
+            <Loader2 className="absolute inset-0 m-auto h-6 w-6 animate-spin" style={{ color: GOLD }} />
+          </div>
+          <p className="text-sm font-medium" style={{ color: '#9ca3af' }}>Loading your workspace…</p>
         </div>
       </div>
     );
@@ -205,19 +258,26 @@ export default function StaffOverviewPage() {
   return (
     <div className="space-y-5 pb-8">
 
-      {/* ── Clock-out modal ───────────────────────────────────────── */}
+      {/* ── Clock-out modal ───────────────────────────────────────────────── */}
       {showClockOutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-sm p-6 space-y-4 rounded-2xl"
+            style={CARD_LIGHT}>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: `${ORANGE}18` }}>
+                style={{
+                  background: `${ORANGE}14`,
+                  boxShadow: `inset 0 1px 3px rgba(0,0,0,0.1)`,
+                  border: `1px solid ${ORANGE}25`,
+                }}>
                 <Coffee className="h-5 w-5" style={{ color: ORANGE }} />
               </div>
               <div>
-                <p className="text-sm font-bold text-neutral-900">Clock Out</p>
-                <p className="text-xs text-neutral-500 mt-0.5">Leaving before closing time? A note is required.</p>
+                <p className="text-sm font-bold" style={{ color: '#111827' }}>Clock Out</p>
+                <p className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>
+                  Leaving before closing time? A note is required.
+                </p>
               </div>
             </div>
             <textarea
@@ -225,19 +285,34 @@ export default function StaffOverviewPage() {
               value={clockOutNote}
               onChange={(e) => setClockOutNote(e.target.value)}
               placeholder="Reason for early departure (required if before closing time)…"
-              className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-neutral-400"
+              className="w-full rounded-xl px-3 py-2.5 text-sm resize-none outline-none"
+              style={{
+                background: '#faf6ed',
+                border: '1px solid #e0d0b0',
+                boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.10)',
+                color: '#111827',
+              }}
             />
             <div className="flex gap-2">
               <button
                 onClick={() => setShowClockOutModal(false)}
-                className="flex-1 py-2.5 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-50">
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-98"
+                style={{ ...CARD_LIGHT, color: '#4b5563' }}>
                 Cancel
               </button>
               <button
                 onClick={() => submitClockOut(clockOutNote || undefined)}
                 disabled={clockLoading}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-                style={{ background: RED }}>
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all active:scale-98"
+                style={{
+                  background: `linear-gradient(180deg, #f87171 0%, ${RED} 50%, #dc2626 100%)`,
+                  boxShadow: [
+                    '0 4px 10px rgba(239,68,68,0.3)',
+                    'inset 0 1px 0 rgba(255,255,255,0.2)',
+                    'inset 0 -2px 0 rgba(0,0,0,0.15)',
+                  ].join(', '),
+                  border: '1px solid rgba(0,0,0,0.12)',
+                }}>
                 {clockLoading ? 'Clocking out…' : 'Confirm Clock Out'}
               </button>
             </div>
@@ -245,43 +320,68 @@ export default function StaffOverviewPage() {
         </div>
       )}
 
-      {/* ── Header + clock ────────────────────────────────────────── */}
+      {/* ── Hero header — embossed leather card ──────────────────────────── */}
       <div className="rounded-2xl p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-        style={{ background: `linear-gradient(135deg, ${DARK} 0%, #143d2a 100%)` }}>
+        style={CARD_DARK}>
         <div>
-          <p className="text-xs font-medium uppercase tracking-widest" style={{ color: `${GOLD}88` }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest"
+            style={{ color: `${GOLD}70`, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             {dayName} · {dateStr}
           </p>
-          <h1 className="mt-1 text-xl font-bold text-white">
+          <h1 className="mt-1 text-xl font-bold"
+            style={{ color: '#f0f0f0', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
             {greeting()}, {profile?.name?.split(' ')[0] ?? 'there'} 👋
           </h1>
-          <p className="mt-0.5 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <p className="mt-0.5 text-sm" style={{ color: 'rgba(255,255,255,0.42)' }}>
             {timeStr} · {todayBookings.length} appointment{todayBookings.length !== 1 ? 's' : ''} today
           </p>
         </div>
-        {/* Clock in/out */}
+
+        {/* Clock in/out — tactile physical button */}
         <div className="flex flex-col items-start sm:items-end gap-2">
           {isClockedIn && (
-            <p className="text-xs" style={{ color: `${GREEN}cc` }}>
-              <CheckCircle className="inline h-3 w-3 mr-1" />
+            <p className="flex items-center gap-1 text-xs"
+              style={{ color: `${GREEN}cc`, textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
+              <CheckCircle className="h-3 w-3" />
               Clocked in at {clockInTime}
             </p>
           )}
           {isClockedOut && (
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>
               Shift complete · in at {clockInTime}
             </p>
           )}
           {!attendance && (
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Not clocked in yet</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>Not clocked in yet</p>
           )}
           <button
             onClick={isClockedIn ? handleClockOut : handleClockIn}
             disabled={clockLoading || isClockedOut}
-            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all disabled:opacity-40 active:scale-95 active:translate-y-0.5"
             style={isClockedIn
-              ? { background: `${RED}cc`, color: '#fff' }
-              : { background: GOLD, color: DARK }}
+              ? {
+                  background: `linear-gradient(180deg, #f87171 0%, ${RED} 50%, #dc2626 100%)`,
+                  boxShadow: [
+                    '0 6px 14px rgba(239,68,68,0.35)',
+                    '0 3px 6px rgba(0,0,0,0.2)',
+                    'inset 0 1px 0 rgba(255,255,255,0.22)',
+                    'inset 0 -2px 0 rgba(0,0,0,0.18)',
+                  ].join(', '),
+                  border: '1px solid rgba(0,0,0,0.15)',
+                  color: '#fff',
+                }
+              : {
+                  background: `linear-gradient(180deg, #ddb830 0%, ${GOLD} 45%, #b08b1a 100%)`,
+                  boxShadow: [
+                    `0 6px 16px rgba(201,162,39,0.4)`,
+                    '0 3px 6px rgba(0,0,0,0.22)',
+                    'inset 0 1px 0 rgba(255,255,255,0.32)',
+                    'inset 0 -2px 0 rgba(0,0,0,0.2)',
+                  ].join(', '),
+                  border: '1px solid rgba(0,0,0,0.15)',
+                  color: DARK,
+                }
+            }
           >
             {clockLoading
               ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -292,47 +392,33 @@ export default function StaffOverviewPage() {
         </div>
       </div>
 
-      {/* ── KPI cards ─────────────────────────────────────────────── */}
+      {/* ── KPI tiles ─────────────────────────────────────────────────────── */}
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
         {[
-          {
-            label: 'Today\'s Bookings',
-            value: todayBookings.length,
-            icon: Calendar,
-            color: BLUE,
-            sub: `${upcoming.length} upcoming`,
-          },
-          {
-            label: 'Completed',
-            value: completed,
-            icon: CheckCircle,
-            color: GREEN,
-            sub: `${completionRate}% rate`,
-          },
-          {
-            label: 'Pending Commission',
-            value: commissions ? formatPrice(commissions.pending) : '—',
-            icon: DollarSign,
-            color: GOLD,
-            sub: 'Unpaid earnings',
-          },
-          {
-            label: 'Total Earned',
-            value: commissions ? formatPrice(commissions.total) : '—',
-            icon: Zap,
-            color: PURPLE,
-            sub: 'All time',
-          },
+          { label: "Today's Bookings", value: todayBookings.length, icon: Calendar, color: BLUE, sub: `${upcoming.length} upcoming` },
+          { label: 'Completed', value: completed, icon: CheckCircle, color: GREEN, sub: `${completionRate}% rate` },
+          { label: 'Pending Commission', value: commissions ? formatPrice(commissions.pending) : '—', icon: DollarSign, color: GOLD, sub: 'Unpaid earnings' },
+          { label: 'Total Earned', value: commissions ? formatPrice(commissions.total) : '—', icon: Zap, color: PURPLE, sub: 'All time' },
         ].map((k) => (
-          <div key={k.label}
-            className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+          <div key={k.label} className="rounded-2xl p-4" style={CARD_LIGHT}>
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">{k.label}</p>
-                <p className="mt-1 text-xl font-bold text-neutral-900 truncate">{k.value}</p>
-                <p className="text-[11px] text-neutral-400 mt-0.5">{k.sub}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color: '#9ca3af', textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>
+                  {k.label}
+                </p>
+                <p className="mt-1 text-xl font-bold truncate"
+                  style={{ color: '#111827', textShadow: '0 1px 0 rgba(255,255,255,0.8)' }}>
+                  {k.value}
+                </p>
+                <p className="text-[11px] mt-0.5" style={{ color: '#9ca3af' }}>{k.sub}</p>
               </div>
-              <div className="rounded-xl p-2.5 flex-shrink-0" style={{ background: `${k.color}15` }}>
+              <div className="rounded-xl p-2.5 flex-shrink-0"
+                style={{
+                  background: `${k.color}14`,
+                  boxShadow: `inset 0 1px 2px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.55)`,
+                  border: `1px solid ${k.color}20`,
+                }}>
                 <k.icon className="h-4 w-4" style={{ color: k.color }} />
               </div>
             </div>
@@ -340,26 +426,46 @@ export default function StaffOverviewPage() {
         ))}
       </div>
 
-      {/* ── Currently in-progress banner ──────────────────────────── */}
+      {/* ── In-progress banner ────────────────────────────────────────────── */}
       {inProgress && (
-        <div className="rounded-2xl border p-4 flex items-center justify-between gap-4"
-          style={{ background: `${PURPLE}0d`, borderColor: `${PURPLE}30` }}>
+        <div className="rounded-2xl p-4 flex items-center justify-between gap-4"
+          style={{
+            background: `linear-gradient(135deg, ${PURPLE}0e 0%, ${PURPLE}06 100%)`,
+            boxShadow: [
+              `inset 0 1px 0 rgba(255,255,255,0.7)`,
+              `inset 0 -1px 0 rgba(0,0,0,0.04)`,
+              '0 2px 6px rgba(0,0,0,0.06)',
+            ].join(', '),
+            border: `1px solid ${PURPLE}28`,
+          }}>
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full flex items-center justify-center animate-pulse"
-              style={{ background: `${PURPLE}25` }}>
+              style={{
+                background: `${PURPLE}22`,
+                boxShadow: `inset 0 1px 3px rgba(0,0,0,0.1)`,
+                border: `1px solid ${PURPLE}30`,
+              }}>
               <Clock className="h-4 w-4" style={{ color: PURPLE }} />
             </div>
             <div>
-              <p className="text-xs font-semibold" style={{ color: PURPLE }}>In Progress Now</p>
-              <p className="text-sm font-bold text-neutral-800">{inProgress.service_name}</p>
-              <p className="text-[11px] text-neutral-500">{inProgress.customer_name} · {inProgress.scheduled_time}</p>
+              <p className="text-xs font-bold" style={{ color: PURPLE }}>In Progress Now</p>
+              <p className="text-sm font-bold" style={{ color: '#111827' }}>{inProgress.service_name}</p>
+              <p className="text-[11px]" style={{ color: '#6b7280' }}>{inProgress.customer_name} · {inProgress.scheduled_time}</p>
             </div>
           </div>
           <button
             onClick={() => handleStatusUpdate(inProgress.id, 'completed')}
             disabled={updatingId === inProgress.id}
-            className="flex-shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all"
-            style={{ background: GREEN, color: '#fff' }}
+            className="flex-shrink-0 rounded-xl px-4 py-2 text-sm font-bold text-white transition-all active:scale-95 disabled:opacity-50"
+            style={{
+              background: `linear-gradient(180deg, #34d399 0%, ${GREEN} 50%, #059669 100%)`,
+              boxShadow: [
+                `0 4px 10px rgba(16,185,129,0.3)`,
+                'inset 0 1px 0 rgba(255,255,255,0.22)',
+                'inset 0 -2px 0 rgba(0,0,0,0.15)',
+              ].join(', '),
+              border: '1px solid rgba(0,0,0,0.1)',
+            }}
           >
             {updatingId === inProgress.id
               ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -368,51 +474,60 @@ export default function StaffOverviewPage() {
         </div>
       )}
 
-      {/* ── Schedule + Commission side by side ────────────────────── */}
+      {/* ── Schedule + Commission ─────────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-12">
 
         {/* Today's schedule */}
-        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden lg:col-span-7">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-neutral-50">
-            <h3 className="text-sm font-semibold text-neutral-800">
-              Today's Schedule
+        <div className={cn('rounded-2xl overflow-hidden lg:col-span-7')} style={CARD_LIGHT}>
+          <div className="flex items-center justify-between px-5 py-3.5" style={SECTION_HEADER}>
+            <h3 className="text-sm font-semibold"
+              style={{ color: '#1f2937', textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>
+              Today&apos;s Schedule
               {todayBookings.length > 0 && (
-                <span className="ml-2 text-xs font-normal text-neutral-400">
+                <span className="ml-2 text-xs font-normal" style={{ color: '#9ca3af' }}>
                   {todayBookings.length} appointment{todayBookings.length !== 1 ? 's' : ''}
                 </span>
               )}
             </h3>
-            <span className="text-xs text-neutral-400">{dateStr}</span>
+            <span className="text-xs" style={{ color: '#9ca3af' }}>{dateStr}</span>
           </div>
-          <div className="divide-y divide-neutral-50">
-            {todayBookings.length > 0 ? todayBookings.map((b) => {
+
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.5)' }}>
+            {todayBookings.length > 0 ? todayBookings.map((b, idx) => {
               const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
-              const canStart   = b.status === 'confirmed' || b.status === 'pending';
+              const canStart    = b.status === 'confirmed' || b.status === 'pending';
               const canComplete = b.status === 'in_progress';
-              const canNoShow  = b.status === 'confirmed' || b.status === 'pending';
+              const canNoShow   = b.status === 'confirmed' || b.status === 'pending';
               return (
                 <div key={b.id}
-                  className="px-5 py-4 flex items-start gap-4 hover:bg-neutral-50 transition-colors">
-                  {/* Time + dot */}
+                  className="px-5 py-4 flex items-start gap-4 transition-colors"
+                  style={{
+                    borderBottom: '1px solid rgba(0,0,0,0.05)',
+                    background: idx % 2 === 0 ? '#ffffff' : 'linear-gradient(90deg, #faf7f2 0%, #f8f5ef 100%)',
+                  }}>
+                  {/* Time column */}
                   <div className="flex flex-col items-center gap-1 flex-shrink-0 pt-0.5">
-                    <span className="text-xs font-bold text-neutral-800">{b.scheduled_time}</span>
-                    <div className="w-px h-6 bg-neutral-100" />
+                    <span className="text-xs font-bold" style={{ color: '#1f2937' }}>{b.scheduled_time}</span>
+                    <div className="w-px h-6" style={{ background: 'rgba(0,0,0,0.08)' }} />
                     <div className="h-2 w-2 rounded-full"
-                      style={{ background: cfg.color }} />
+                      style={{ background: cfg.color, boxShadow: `0 0 4px ${cfg.color}60` }} />
                   </div>
+
                   {/* Details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-semibold text-neutral-800">{b.service_name}</p>
-                        <p className="text-xs text-neutral-500 mt-0.5">
+                        <p className="text-sm font-semibold" style={{ color: '#1f2937' }}>{b.service_name}</p>
+                        <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>
                           {b.customer_name}
                           {b.is_walkin && (
-                            <span className="ml-1.5 text-[9px] rounded px-1 py-0.5 font-semibold"
-                              style={{ background: `${ORANGE}18`, color: ORANGE }}>walk-in</span>
+                            <span className="ml-1.5 text-[9px] rounded px-1 py-0.5 font-bold"
+                              style={{ background: `${ORANGE}14`, color: ORANGE, border: `1px solid ${ORANGE}22` }}>
+                              walk-in
+                            </span>
                           )}
                         </p>
-                        <div className="flex items-center gap-3 mt-1.5 text-[10px] text-neutral-400">
+                        <div className="flex items-center gap-3 mt-1.5 text-[10px]" style={{ color: '#9ca3af' }}>
                           <span>{b.duration_minutes} min</span>
                           <span>{formatPrice(b.price)}</span>
                           {b.deposit_amount > 0 && (
@@ -422,32 +537,20 @@ export default function StaffOverviewPage() {
                       </div>
                       <StatusBadge status={b.status} />
                     </div>
-                    {/* Action buttons */}
+
                     {!['completed', 'cancelled', 'no_show'].includes(b.status) && (
                       <div className="mt-2.5 flex items-center gap-1.5">
                         {canStart && (
-                          <StatusButton
-                            status="in_progress"
-                            onClick={() => handleStatusUpdate(b.id, 'in_progress')}
-                            disabled={updatingId === b.id}
-                          />
+                          <StatusButton status="in_progress" onClick={() => handleStatusUpdate(b.id, 'in_progress')} disabled={updatingId === b.id} />
                         )}
                         {canComplete && (
-                          <StatusButton
-                            status="completed"
-                            onClick={() => handleStatusUpdate(b.id, 'completed')}
-                            disabled={updatingId === b.id}
-                          />
+                          <StatusButton status="completed" onClick={() => handleStatusUpdate(b.id, 'completed')} disabled={updatingId === b.id} />
                         )}
                         {canNoShow && (
-                          <StatusButton
-                            status="no_show"
-                            onClick={() => handleStatusUpdate(b.id, 'no_show')}
-                            disabled={updatingId === b.id}
-                          />
+                          <StatusButton status="no_show" onClick={() => handleStatusUpdate(b.id, 'no_show')} disabled={updatingId === b.id} />
                         )}
                         {updatingId === b.id && (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin text-neutral-400" />
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: '#9ca3af' }} />
                         )}
                       </div>
                     )}
@@ -456,21 +559,21 @@ export default function StaffOverviewPage() {
               );
             }) : (
               <div className="px-5 py-12 text-center">
-                <Calendar className="h-8 w-8 mx-auto mb-2 text-neutral-200" />
-                <p className="text-sm font-medium text-neutral-400">No appointments today</p>
-                <p className="text-xs text-neutral-300 mt-1">Enjoy your free time or check for walk-ins</p>
+                <Calendar className="h-8 w-8 mx-auto mb-2" style={{ color: '#d1d5db' }} />
+                <p className="text-sm font-semibold" style={{ color: '#9ca3af' }}>No appointments today</p>
+                <p className="text-xs mt-1" style={{ color: '#d1d5db' }}>Enjoy your free time or check for walk-ins</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right panel: commission + performance */}
+        {/* Right panel */}
         <div className="lg:col-span-5 space-y-4">
 
-          {/* Commission panel */}
-          <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-neutral-50">
-              <h3 className="text-sm font-semibold text-neutral-800">My Commission</h3>
+          {/* Commission */}
+          <div className="rounded-2xl overflow-hidden" style={CARD_LIGHT}>
+            <div className="px-5 py-3.5" style={SECTION_HEADER}>
+              <h3 className="text-sm font-semibold" style={{ color: '#1f2937' }}>My Commission</h3>
             </div>
             <div className="p-5 space-y-4">
               {commissions ? (
@@ -482,8 +585,12 @@ export default function StaffOverviewPage() {
                       { label: 'Total',   value: commissions.total,   color: GOLD   },
                     ].map((m) => (
                       <div key={m.label} className="rounded-xl p-3"
-                        style={{ background: `${m.color}10` }}>
-                        <p className="text-[10px] text-neutral-400 font-medium">{m.label}</p>
+                        style={{
+                          background: `${m.color}0c`,
+                          boxShadow: `inset 0 1px 3px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.6)`,
+                          border: `1px solid ${m.color}18`,
+                        }}>
+                        <p className="text-[10px] font-semibold" style={{ color: '#6b7280' }}>{m.label}</p>
                         <p className="text-sm font-bold mt-0.5" style={{ color: m.color }}>
                           {formatPrice(m.value)}
                         </p>
@@ -501,28 +608,32 @@ export default function StaffOverviewPage() {
                   )}
                 </>
               ) : (
-                <p className="text-sm text-neutral-400 text-center py-3">No commission data</p>
+                <p className="text-sm text-center py-3" style={{ color: '#9ca3af' }}>No commission data</p>
               )}
             </div>
           </div>
 
           {/* Performance */}
-          <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-neutral-50">
-              <h3 className="text-sm font-semibold text-neutral-800">My Performance</h3>
+          <div className="rounded-2xl overflow-hidden" style={CARD_LIGHT}>
+            <div className="px-5 py-3.5" style={SECTION_HEADER}>
+              <h3 className="text-sm font-semibold" style={{ color: '#1f2937' }}>My Performance</h3>
             </div>
             <div className="p-5 space-y-3">
               {performance ? (
                 <>
                   <div className="grid grid-cols-3 gap-2 text-center mb-1">
                     {[
-                      { label: 'Completed', value: performance.completed, color: GREEN },
-                      { label: 'No-shows',  value: performance.no_shows,  color: RED   },
+                      { label: 'Completed', value: performance.completed,    color: GREEN },
+                      { label: 'No-shows',  value: performance.no_shows,     color: RED   },
                       { label: 'Cancelled', value: performance.cancellations, color: '#9ca3af' },
                     ].map((m) => (
                       <div key={m.label} className="rounded-xl py-2.5 px-1"
-                        style={{ background: `${m.color}10` }}>
-                        <p className="text-[10px] text-neutral-400">{m.label}</p>
+                        style={{
+                          background: `${m.color}0c`,
+                          boxShadow: `inset 0 1px 3px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.6)`,
+                          border: `1px solid ${m.color}18`,
+                        }}>
+                        <p className="text-[10px] font-semibold" style={{ color: '#6b7280' }}>{m.label}</p>
                         <p className="text-lg font-bold" style={{ color: m.color }}>{m.value}</p>
                       </div>
                     ))}
@@ -536,55 +647,58 @@ export default function StaffOverviewPage() {
                       color={GREEN}
                     />
                   )}
-                  <div className="pt-1 border-t border-neutral-50">
-                    <p className="text-[10px] text-neutral-400">Revenue Generated</p>
-                    <p className="text-base font-bold mt-0.5" style={{ color: GOLD }}>
+                  <div className="pt-1" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                    <p className="text-[10px] font-semibold" style={{ color: '#9ca3af' }}>Revenue Generated</p>
+                    <p className="text-base font-bold mt-0.5"
+                      style={{ color: GOLD, textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>
                       {formatPrice(performance.revenue_generated || 0)}
                     </p>
                   </div>
                 </>
               ) : (
-                <p className="text-sm text-neutral-400 text-center py-3">No performance data yet</p>
+                <p className="text-sm text-center py-3" style={{ color: '#9ca3af' }}>No performance data yet</p>
               )}
             </div>
           </div>
 
           {/* Attendance today */}
-          <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5">
-            <p className="text-xs font-semibold text-neutral-500 uppercase tracking-widest mb-3">
-              Today's Attendance
+          <div className="rounded-2xl p-5" style={CARD_LIGHT}>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-3"
+              style={{ color: '#9ca3af', textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>
+              Today&apos;s Attendance
             </p>
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-neutral-400 text-xs w-16">Clock In</span>
-                  <span className="font-semibold text-neutral-800">
+                  <span className="text-[10px] font-semibold w-16" style={{ color: '#9ca3af' }}>Clock In</span>
+                  <span className="font-bold" style={{ color: '#1f2937' }}>
                     {attendance?.clock_in
                       ? new Date(attendance.clock_in).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })
                       : '—'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-neutral-400 text-xs w-16">Clock Out</span>
-                  <span className="font-semibold text-neutral-800">
+                  <span className="text-[10px] font-semibold w-16" style={{ color: '#9ca3af' }}>Clock Out</span>
+                  <span className="font-bold" style={{ color: '#1f2937' }}>
                     {attendance?.clock_out
                       ? new Date(attendance.clock_out).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })
                       : '—'}
                   </span>
                 </div>
               </div>
-              <div
-                className="h-12 w-12 rounded-2xl flex items-center justify-center"
+              <div className="h-12 w-12 rounded-2xl flex items-center justify-center"
                 style={{
-                  background: isClockedIn ? `${GREEN}18` : isClockedOut ? `${BLUE}18` : '#f5f5f5',
-                }}
-              >
+                  background: isClockedIn ? `${GREEN}14` : isClockedOut ? `${BLUE}14` : 'rgba(0,0,0,0.05)',
+                  boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.08)',
+                  border: `1px solid ${isClockedIn ? GREEN : isClockedOut ? BLUE : 'rgba(0,0,0,0.08)'}22`,
+                }}>
                 {isClockedIn  && <CheckCircle className="h-6 w-6" style={{ color: GREEN }} />}
                 {isClockedOut && <Star className="h-6 w-6" style={{ color: BLUE }} />}
-                {!attendance  && <AlertCircle className="h-6 w-6 text-neutral-300" />}
+                {!attendance  && <AlertCircle className="h-6 w-6" style={{ color: '#d1d5db' }} />}
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
