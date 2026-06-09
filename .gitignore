@@ -32,7 +32,7 @@ yarn-error.log*
 
 # env files — local secrets are ignored; production public vars are committed
 .env*
-!.env.production
+.env.production
 
 # vercel
 .vercel
