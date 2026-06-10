@@ -139,8 +139,9 @@ function AttendanceTab() {
     setLoading(true);
     try {
       const { data } = await hrAdminApi.listAttendance({ startDate, endDate, page, limit: LIMIT });
-      setRecords((data as { data: AttRec[]; meta: { total: number } }).data ?? []);
-      setTotal((data as { data: AttRec[]; meta: { total: number } }).meta?.total ?? 0);
+      const typed = data as unknown as { data: AttRec[]; meta: { total: number } };
+      setRecords(typed.data ?? []);
+      setTotal(typed.meta?.total ?? 0);
     } catch { toast.error('Failed to load attendance'); }
     finally   { setLoading(false); }
   }, [startDate, endDate, page]);

@@ -21,6 +21,7 @@ const orderStatusVariant: Record<OrderStatus, 'default' | 'info' | 'success' | '
   pending: 'warning',
   paid: 'info',
   processing: 'info',
+  packed: 'info',
   shipped: 'info',
   delivered: 'success',
   cancelled: 'danger',
