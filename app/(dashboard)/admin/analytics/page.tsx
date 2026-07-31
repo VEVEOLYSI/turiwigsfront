@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { TrendingUp, Calendar, Users, DollarSign, RefreshCw } from 'lucide-react';
+import { TrendingUp, Calendar, Users, DollarSign } from 'lucide-react';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 import { analyticsApi } from '@/api/analytics.api';
 import type { RevenueData, PLData, StaffPerformanceItem, BookingAnalytics } from '@/api/analytics.api';
 import { SparkLine } from '@/components/dashboard/charts/SparkLine';
@@ -51,6 +52,13 @@ export default function AdminAnalyticsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  useRealtimeRefresh(['orders', 'service_bookings'], load);
+
+  useEffect(() => {
+    const id = setInterval(() => load(), 30_000);
+    return () => clearInterval(id);
+  }, [load]);
+
   const sparkRevenue = revenue?.daily?.map((d) => d.revenue) ?? [];
   const dayBars = (revenue?.daily ?? []).slice(-14).map((d) => ({
     label: new Date(d.day).toLocaleDateString('en', { weekday: 'short' }),
@@ -83,10 +91,6 @@ export default function AdminAnalyticsPage() {
               {p}
             </button>
           ))}
-          <button onClick={() => load()} disabled={loading}
-            className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-medium border border-neutral-200 text-neutral-600 hover:bg-neutral-50">
-            <RefreshCw className={cn('h-3 w-3', loading && 'animate-spin')} /> Refresh
-          </button>
         </div>
       </div>
 

@@ -148,6 +148,11 @@ function AttendanceTab() {
 
   useEffect(() => { load(); }, [load]);
 
+  useEffect(() => {
+    const id = setInterval(() => load(), 30_000);
+    return () => clearInterval(id);
+  }, [load]);
+
   async function handleAdminClockIn(staffId: string) {
     try {
       await hrAdminApi.adminClockIn({ staffId });
@@ -180,9 +185,6 @@ function AttendanceTab() {
           <input type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
             className="border border-neutral-200 rounded-xl px-3 py-2 text-sm focus:outline-none" />
         </div>
-        <button onClick={load} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border border-neutral-200 text-neutral-600 hover:bg-neutral-50">
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
-        </button>
         <p className="text-xs text-neutral-400 ml-auto">{total} records</p>
       </div>
 

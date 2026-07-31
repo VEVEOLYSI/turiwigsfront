@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Package, AlertTriangle, Plus, RefreshCw, ArrowDown, ArrowUp } from 'lucide-react';
+import { Package, AlertTriangle, Plus, ArrowDown, ArrowUp } from 'lucide-react';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 import { inventoryApi } from '@/api/erp.api';
 import { formatPrice } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
@@ -37,6 +38,13 @@ export default function AdminInventoryPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  useRealtimeRefresh(['inventory_items', 'inventory_transactions'], load);
+
+  useEffect(() => {
+    const id = setInterval(() => load(), 30_000);
+    return () => clearInterval(id);
+  }, [load]);
+
   const handleTxn = async () => {
     if (!txnItem || !txnQty || Number(txnQty) <= 0) return;
     setSubmitting(true);
@@ -60,10 +68,6 @@ export default function AdminInventoryPage() {
           <h1 className="text-xl font-bold text-neutral-900">Inventory</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Salon consumables &amp; supplies</p>
         </div>
-        <button onClick={() => load()} disabled={loading}
-          className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium border border-neutral-200 text-neutral-600 hover:bg-neutral-50">
-          <RefreshCw className={cn('h-3 w-3', loading && 'animate-spin')} /> Refresh
-        </button>
       </div>
 
       {/* KPIs */}

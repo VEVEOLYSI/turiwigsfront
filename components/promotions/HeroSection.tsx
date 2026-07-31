@@ -232,14 +232,30 @@ export function HeroSection() {
           {heroData.headline[1]}
         </h1>
 
-        <Link
-          href={heroData.cta.href}
-          className="mt-7 sm:mt-9 inline-flex items-center gap-2 sm:gap-2.5 bg-white text-black font-bold tracking-[0.12em] sm:tracking-[0.14em] px-8 sm:px-11 py-3.5 sm:py-4 hover:opacity-90 active:scale-[0.97] transition-all"
-          style={{ fontSize: 12 }}
-        >
-          {heroData.cta.label}
-          <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-        </Link>
+        <div className="mt-7 sm:mt-9 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href={heroData.cta.href}
+            className="inline-flex items-center gap-2 sm:gap-2.5 bg-white text-black font-bold tracking-[0.12em] sm:tracking-[0.14em] px-8 sm:px-11 py-3.5 sm:py-4 hover:opacity-90 active:scale-[0.97] transition-all"
+            style={{ fontSize: 12 }}
+          >
+            {heroData.cta.label}
+            <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+          </Link>
+
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 sm:gap-2.5 font-bold tracking-[0.12em] sm:tracking-[0.14em] px-8 sm:px-11 py-3.5 sm:py-4 hover:opacity-90 active:scale-[0.97] transition-all"
+            style={{
+              fontSize: 12,
+              color: '#fff',
+              border: '1.5px solid rgba(255,255,255,0.5)',
+              background: 'rgba(255,255,255,0.08)',
+            }}
+          >
+            Shop Wigs
+            <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+          </Link>
+        </div>
 
         <p
           className="mt-2.5 sm:mt-3"

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { DollarSign, RefreshCw } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 import { staffDashboardApi } from '@/api/staff-dashboard.api';
 import type { CommissionSummaryOwn } from '@/api/staff-dashboard.api';
 import { ProgressRow } from '@/components/dashboard/charts/ProgressRow';
@@ -32,6 +33,13 @@ export default function StaffCommissionsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  useRealtimeRefresh(['commissions', 'service_bookings'], load);
+
+  useEffect(() => {
+    const id = setInterval(() => load(), 30_000);
+    return () => clearInterval(id);
+  }, [load]);
+
   return (
     <div className="space-y-5 pb-8">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -39,10 +47,6 @@ export default function StaffCommissionsPage() {
           <h1 className="text-xl font-bold text-neutral-900">My Commissions</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Your earnings from completed services</p>
         </div>
-        <button onClick={() => load()} disabled={loading}
-          className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium border border-neutral-200 text-neutral-600 hover:bg-neutral-50">
-          <RefreshCw className={cn('h-3 w-3', loading && 'animate-spin')} /> Refresh
-        </button>
       </div>
 
       {/* Summary cards */}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Users } from 'lucide-react';
@@ -7,37 +8,40 @@ import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
 import { setTechnician, selectWizard } from '@/store/slices/booking-wizard.slice';
 import { TechnicianCard } from '@/components/bookings/TechnicianCard';
 import { BookingStepBar } from '@/components/bookings/BookingStepBar';
-import techniciansData from '@/data/technicians.json';
+import { schedulingApi } from '@/api/scheduling.api';
 
-interface Technician {
+interface StaffProfile {
   id: string;
   name: string;
-  title: string;
-  experience: string;
-  languages: string[];
-  skills: string[];
-  rating: number;
-  reviews: number;
-  photo: string;
-  bio: string;
-  slots: string[];
-  certifications: string[];
+  avatar_url?: string;
+  is_active: boolean;
 }
-
-const technicians = techniciansData as Technician[];
 
 export default function TechnicianPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const wizard = useAppSelector(selectWizard);
 
-  function handleSelect(tech: Technician) {
+  const [staff, setStaff] = useState<StaffProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    schedulingApi.listStaff()
+      .then(({ data }) => {
+        const list = (data.data ?? []) as StaffProfile[];
+        setStaff(list.filter((s) => s.is_active));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  function handleSelect(member: StaffProfile) {
     dispatch(
       setTechnician({
-        id: tech.id,
-        name: tech.name,
-        title: tech.title,
-        photo: tech.photo,
+        id: member.id,
+        name: member.name,
+        title: '',
+        photo: member.avatar_url ?? '',
       })
     );
     router.push('/bookings/schedule');
@@ -113,17 +117,41 @@ export default function TechnicianPage() {
           Or choose a specific technician
         </p>
 
-        {/* Technician grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {technicians.map((tech) => (
-            <TechnicianCard
-              key={tech.id}
-              tech={tech}
-              onSelect={() => handleSelect(tech)}
-              selected={wizard.technician?.id === tech.id}
-            />
-          ))}
-        </div>
+        {/* Staff grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="card-sku p-4 animate-pulse">
+                <div className="flex gap-4">
+                  <div className="w-16 h-16 rounded-full bg-neutral-200 flex-shrink-0" />
+                  <div className="flex-1 space-y-2 pt-1">
+                    <div className="h-4 bg-neutral-200 rounded w-3/4" />
+                    <div className="h-3 bg-neutral-100 rounded w-1/2" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : staff.length === 0 ? (
+          <p className="text-sm text-center py-6" style={{ color: '#7a8694' }}>
+            No technicians available at the moment.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {staff.map((member) => (
+              <TechnicianCard
+                key={member.id}
+                tech={{
+                  id: member.id,
+                  name: member.name,
+                  photo: member.avatar_url,
+                }}
+                onSelect={() => handleSelect(member)}
+                selected={wizard.technician?.id === member.id}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

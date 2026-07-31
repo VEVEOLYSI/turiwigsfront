@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { DollarSign, Plus, CheckCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { DollarSign, Plus, CheckCircle, Trash2 } from 'lucide-react';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 import { expensesApi } from '@/api/erp.api';
 import { formatPrice, formatDate } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
@@ -35,6 +36,13 @@ export default function AdminExpensesPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useRealtimeRefresh(['expenses'], load);
+
+  useEffect(() => {
+    const id = setInterval(() => load(), 30_000);
+    return () => clearInterval(id);
+  }, [load]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,9 +86,6 @@ export default function AdminExpensesPage() {
           <p className="text-sm text-neutral-400 mt-0.5">Track and approve business expenses</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => load()} disabled={loading} className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium border border-neutral-200 text-neutral-600 hover:bg-neutral-50">
-            <RefreshCw className={cn('h-3 w-3', loading && 'animate-spin')} /> Refresh
-          </button>
           <button onClick={() => setShowAdd(true)} className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-white" style={{ background: GOLD }}>
             <Plus className="h-3.5 w-3.5" /> Add Expense
           </button>

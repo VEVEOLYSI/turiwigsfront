@@ -7,16 +7,16 @@ import { StarRating } from '@/components/ui/StarRating';
 interface Technician {
   id: string;
   name: string;
-  title: string;
-  experience: string;
-  languages: string[];
-  skills: string[];
-  rating: number;
-  reviews: number;
-  photo: string;
-  bio: string;
-  slots: string[];
-  certifications: string[];
+  title?: string;
+  experience?: string;
+  languages?: string[];
+  skills?: string[];
+  rating?: number;
+  reviews?: number;
+  photo?: string;
+  bio?: string;
+  slots?: string[];
+  certifications?: string[];
 }
 
 interface TechnicianCardProps {
@@ -46,14 +46,20 @@ export function TechnicianCard({ tech, onSelect, selected }: TechnicianCardProps
       <div className="flex gap-4">
         {/* Photo */}
         <div className="relative flex-shrink-0">
-          <div className="w-16 h-16 rounded-full overflow-hidden">
-            <Image
-              src={tech.photo}
-              alt={tech.name}
-              width={64}
-              height={64}
-              className="object-cover w-full h-full"
-            />
+          <div className="w-16 h-16 rounded-full overflow-hidden bg-neutral-100 flex items-center justify-center">
+            {tech.photo ? (
+              <Image
+                src={tech.photo}
+                alt={tech.name}
+                width={64}
+                height={64}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <span className="text-2xl font-bold" style={{ color: '#0a2e1f' }}>
+                {tech.name[0]?.toUpperCase()}
+              </span>
+            )}
           </div>
           {selected && (
             <div
@@ -71,58 +77,70 @@ export function TechnicianCard({ tech, onSelect, selected }: TechnicianCardProps
             <h4 className="font-semibold text-base" style={{ color: '#0a2e1f' }}>
               {tech.name}
             </h4>
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <span className="text-xs font-semibold" style={{ color: '#c9a227' }}>
-                {tech.rating}
-              </span>
-              <StarRating value={Math.round(tech.rating)} size="sm" />
+            {tech.rating != null && (
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <span className="text-xs font-semibold" style={{ color: '#c9a227' }}>
+                  {tech.rating}
+                </span>
+                <StarRating value={Math.round(tech.rating)} size="sm" />
+              </div>
+            )}
+          </div>
+
+          {tech.title && (
+            <p className="text-sm mb-0.5" style={{ color: '#143d2a' }}>
+              {tech.title}
+            </p>
+          )}
+
+          {(tech.experience || tech.reviews != null) && (
+            <div className="flex items-center gap-1 text-xs mb-3" style={{ color: '#7a8694' }}>
+              {tech.experience && (
+                <>
+                  <Clock className="h-3 w-3" />
+                  <span>{tech.experience} experience</span>
+                </>
+              )}
+              {tech.experience && tech.reviews != null && <span>·</span>}
+              {tech.reviews != null && <span>{tech.reviews} reviews</span>}
             </div>
-          </div>
+          )}
 
-          <p className="text-sm mb-0.5" style={{ color: '#143d2a' }}>
-            {tech.title}
-          </p>
+          {tech.skills && tech.skills.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {tech.skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="text-xs rounded-full px-2 py-0.5 font-medium"
+                  style={{
+                    background: 'rgba(10,46,31,0.08)',
+                    color: '#143d2a',
+                    border: '1px solid rgba(10,46,31,0.12)',
+                  }}
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          )}
 
-          <div className="flex items-center gap-1 text-xs mb-3" style={{ color: '#7a8694' }}>
-            <Clock className="h-3 w-3" />
-            <span>{tech.experience} experience</span>
-            <span>·</span>
-            <span>{tech.reviews} reviews</span>
-          </div>
-
-          {/* Skills */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {tech.skills.map((skill) => (
-              <span
-                key={skill}
-                className="text-xs rounded-full px-2 py-0.5 font-medium"
-                style={{
-                  background: 'rgba(10,46,31,0.08)',
-                  color: '#143d2a',
-                  border: '1px solid rgba(10,46,31,0.12)',
-                }}
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-
-          {/* Available slots */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {tech.slots.map((slot) => (
-              <span
-                key={slot}
-                className="text-xs rounded-lg px-2 py-0.5 font-medium"
-                style={{
-                  background: '#faf6ed',
-                  color: '#143d2a',
-                  border: '1px solid #e0d8c8',
-                }}
-              >
-                {slot}
-              </span>
-            ))}
-          </div>
+          {tech.slots && tech.slots.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {tech.slots.map((slot) => (
+                <span
+                  key={slot}
+                  className="text-xs rounded-lg px-2 py-0.5 font-medium"
+                  style={{
+                    background: '#faf6ed',
+                    color: '#143d2a',
+                    border: '1px solid #e0d8c8',
+                  }}
+                >
+                  {slot}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Select button */}
           <button
