@@ -1,62 +1,62 @@
 {
   "brand": "Tiuri Nails & Wigs Parlour",
-  "headline": ["Look Your", "Best."],
-  "cta": { "label": "BOOK YOUR APPOINTMENT", "href": "/bookings" },
-  "ctaSub": "Start your journey today",
-  "videos": [
-    "/video/hero-1.mp4",
-    "/video/hero-2.mp4",
-    "/video/hero-3.mp4",
-    "/video/hero-4.mp4",
-    "/video/hero-5.mp4"
+  "headline": [
+    "YOUR PEACEFUL, CLEAN ESCAPE FROM NAIROBI'S CHAOS.",
+    "SOFT, UNHURRIED MANICURES AND PEDICURES",
+    "THAT LEAVE YOU POLISHED FOR WEEKS."
   ],
+  "cta": {
+    "label": "BOOK YOUR NAILS APPOINTMENT",
+    "href": "/bookings"
+  },
+  "ctaSub": "Relax. Refresh. Leave Beautiful.",
   "gallery": [
     {
       "src": "/images/salon-1.jpeg",
-      "videoSrc": "/video/hero-1.mp4",
-      "text": "Get the best nails tech",
+      "background": "/images/salon-1.jpeg",
+      "text": "Expert manicures and pedicures crafted to perfection.",
       "href": "/services",
       "label": "NAILS"
     },
     {
       "src": "/images/salon-2.jpeg",
-      "videoSrc": "/video/hero-2.mp4",
-      "text": "Best space for your peace",
+      "background": "/images/salon-2.jpeg",
+      "text": "A peaceful salon designed for comfort and relaxation.",
       "href": "/services",
       "label": "SALON"
     },
     {
       "src": "/images/salon-3.jpeg",
-      "videoSrc": "/video/hero-3.mp4",
-      "text": "We take care of you at any time of your life",
+      "background": "/images/salon-3.jpeg",
+      "text": "Premium care for every stage of your beauty journey.",
       "href": "/services",
       "label": "CARE"
     },
     {
       "src": "/images/salon-4.jpeg",
-      "videoSrc": "/video/hero-4.mp4",
-      "text": "Get the best nails tech",
+      "background": "/images/salon-4.jpeg",
+      "text": "Luxury wigs styled to match your confidence.",
       "href": "/products",
       "label": "WIGS"
     },
     {
       "src": "/images/salon-5.jpeg",
-      "videoSrc": "/video/hero-5.mp4",
-      "text": "Best space for your peace",
+      "background": "/images/salon-5.jpeg",
+      "text": "Beautiful styles that complement your unique personality.",
       "href": "/products",
       "label": "STYLE"
     },
     {
       "src": "/images/salon-6.jpeg",
-      "videoSrc": "/video/hero-1.mp4",
-      "text": "We take care of you at any time of your life",
+      "background": "/images/salon-6.jpeg",
+      "text": "Professional nail artistry with lasting elegance.",
       "href": "/services",
       "label": "NAILS"
     },
     {
       "src": "/images/salon-7.png",
-      "videoSrc": "/video/hero-2.mp4",
-      "text": "Get the best nails tech",
+      "background": "/images/salon-7.png",
+      "text": "Discover premium wigs for every occasion.",
       "href": "/products",
       "label": "WIGS"
     }

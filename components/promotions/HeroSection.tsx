@@ -5,10 +5,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import heroData from '@/data/hero.json';
+import { Amatic_SC } from "next/font/google";
+
+
+import { Kaushan_Script } from "next/font/google";
+
+const script = Kaushan_Script({
+  subsets: ["latin"],
+  weight: "400",
+});
 
 /* ── constants ───────────────────────────────────────────────────────────── */
 const HEADER_H = 66;
 const CARD_MS  = 5500;
+
+
+const amatic = Amatic_SC({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
 
 /* ── responsive card dimensions ─────────────────────────────────────────── */
 interface Dims { CW: number; CH: number; SW: number; SH: number; GAP: number }
@@ -140,7 +155,7 @@ export function HeroSection() {
   const cardTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const N           = heroData.gallery.length;
-  const activeVideo = heroData.gallery[activeCard].videoSrc;
+  const activeBackground = heroData.gallery[activeCard].background;
 
   /* responsive dimensions */
   useEffect(() => {
@@ -160,17 +175,17 @@ export function HeroSection() {
   }, [activeCard, N]);
 
   /* sync video playback to active card */
-  useEffect(() => {
-    vidRefs.current.forEach((vid, i) => {
-      if (!vid) return;
-      if (heroData.videos[i] === activeVideo) {
-        vid.currentTime = 0;
-        vid.play().catch(() => {});
-      } else {
-        vid.pause();
-      }
-    });
-  }, [activeVideo]);
+  // useEffect(() => {
+  //   vidRefs.current.forEach((vid, i) => {
+  //     if (!vid) return;
+  //     if (heroData.videos[i] === activeVideo) {
+  //       vid.currentTime = 0;
+  //       vid.play().catch(() => {});
+  //     } else {
+  //       vid.pause();
+  //     }
+  //   });
+  // }, [activeVideo]);
 
   return (
     <section
@@ -182,20 +197,14 @@ export function HeroSection() {
       }}
     >
       {/* ══ Video background — cover fills the entire page ══════════════════ */}
-      {heroData.videos.map((src, i) => (
-        <video
-          key={src}
-          ref={(el) => { vidRefs.current[i] = el; }}
-          src={src}
-          muted loop playsInline preload="auto"
-          className="absolute inset-0 w-full h-full"
-          style={{
-            objectFit: 'cover',
-            transition: 'opacity 700ms ease',
-            opacity: src === activeVideo ? 1 : 0,
-          }}
-        />
-      ))}
+              <Image
+            src={heroData.gallery[activeCard].background}
+            alt="Hero Background"
+            fill
+            priority
+            className="absolute inset-0 object-cover"
+            sizes="100vw"
+          />
 
       {/* ══ Gradient overlay ════════════════════════════════════════════════ */}
       <div
@@ -223,16 +232,22 @@ export function HeroSection() {
           {heroData.brand}
         </p>
 
-        <h1
-          className="font-bold text-white leading-[1.02] tracking-tight"
-          style={{ fontSize: 'clamp(2.6rem, 9vw, 7rem)' }}
-        >
-          {heroData.headline[0]}
-          <br />
-          {heroData.headline[1]}
-        </h1>
+      <h1
+  className={`${script.className} max-w-4xl mx-auto text-white tracking-[0.02em] leading-[1.2] drop-shadow-md`}
+  style={{
+    fontSize: 'clamp(1.75rem, 4vw + 1rem, 3.25rem)',
+    lineHeight: 1.15,
+  }}
+>
+  {heroData.headline.map((line, index) => (
+    <span key={index}>
+      {line}
+      {index !== heroData.headline.length - 1 && <br />}
+    </span>
+  ))}
+</h1>
 
-        <div className="mt-7 sm:mt-9 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-7 sm:mt-9 flex flex-wrap items-center justify-center gap-1">
           <Link
             href={heroData.cta.href}
             className="inline-flex items-center gap-2 sm:gap-2.5 bg-white text-black font-bold tracking-[0.12em] sm:tracking-[0.14em] px-8 sm:px-11 py-3.5 sm:py-4 hover:opacity-90 active:scale-[0.97] transition-all"
@@ -258,8 +273,8 @@ export function HeroSection() {
         </div>
 
         <p
-          className="mt-2.5 sm:mt-3"
-          style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}
+          className="mt-28.5 sm:mt-3"
+          style={{ fontSize: 10, color: 'rgba(2, 1, 1, 0.3)' }}
         >
           {heroData.ctaSub}
         </p>
@@ -314,7 +329,7 @@ export function HeroSection() {
                   </span>
 
                   <div className="hidden sm:flex items-center gap-3 flex-1 justify-center">
-                    {['Shop', 'Services', 'Gallery', 'Book'].map((l) => (
+                    {[''].map((l) => (
                       <span
                         key={l}
                         style={{ fontSize: 8, color: 'rgba(255,255,255,0.36)', letterSpacing: '0.05em' }}
@@ -324,18 +339,7 @@ export function HeroSection() {
                     ))}
                   </div>
 
-                  <div
-                    className="rounded-full border px-2 sm:px-2.5 py-1 whitespace-nowrap"
-                    style={{
-                      fontSize:    8,
-                      fontWeight:  600,
-                      letterSpacing: '0.05em',
-                      borderColor: 'rgba(255,255,255,0.2)',
-                      color:       'rgba(255,255,255,0.68)',
-                    }}
-                  >
-                    Book Now
-                  </div>
+                  
                 </div>
 
                 {/* Full-bleed image */}
