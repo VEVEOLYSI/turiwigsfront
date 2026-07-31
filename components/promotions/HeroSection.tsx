@@ -7,14 +7,6 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import heroData from '@/data/hero.json';
 import { Amatic_SC } from "next/font/google";
 
-
-import { Kaushan_Script } from "next/font/google";
-
-const script = Kaushan_Script({
-  subsets: ["latin"],
-  weight: "400",
-});
-
 /* ── constants ───────────────────────────────────────────────────────────── */
 const HEADER_H = 66;
 const CARD_MS  = 5500;
@@ -232,22 +224,22 @@ export function HeroSection() {
           {heroData.brand}
         </p>
 
-      <h1
-  className={`${script.className} max-w-4xl mx-auto text-white tracking-[0.02em] leading-[1.2] drop-shadow-md`}
-  style={{
-    fontSize: 'clamp(1.75rem, 4vw + 1rem, 3.25rem)',
-    lineHeight: 1.15,
-  }}
->
-  {heroData.headline.map((line, index) => (
-    <span key={index}>
-      {line}
-      {index !== heroData.headline.length - 1 && <br />}
-    </span>
-  ))}
-</h1>
+        <h1
+              className="max-w-4xl mx-auto text-white font-semibold tracking-[0.08em] leading-[1.2] drop-shadow-md"
+              style={{
+                fontSize: "clamp(0.8rem, 2.5vw, 2.5rem)",
+                lineHeight: 1.1,
+              }}
+            >
+              {heroData.headline.map((line, index) => (
+                <span key={index}>
+                  {line}
+                  {index !== heroData.headline.length - 1 && <br />}
+                </span>
+              ))}
+            </h1>
 
-        <div className="mt-7 sm:mt-9 flex flex-wrap items-center justify-center gap-1">
+        <div className="mt-7 sm:mt-9 flex flex-wrap items-center justify-center gap-3">
           <Link
             href={heroData.cta.href}
             className="inline-flex items-center gap-2 sm:gap-2.5 bg-white text-black font-bold tracking-[0.12em] sm:tracking-[0.14em] px-8 sm:px-11 py-3.5 sm:py-4 hover:opacity-90 active:scale-[0.97] transition-all"
