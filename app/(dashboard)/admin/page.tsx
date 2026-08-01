@@ -241,11 +241,11 @@ export default function AdminOverviewPage() {
     ]);
     if (results[0].status === 'fulfilled') setRevenue(results[0].value.data.data);
     if (results[1].status === 'fulfilled') setPL(results[1].value.data.data);
-    if (results[2].status === 'fulfilled') setStaff(results[2].value.data.data as StaffPerformanceItem[]);
+    if (results[2].status === 'fulfilled') setStaff((results[2].value.data.data ?? []) as StaffPerformanceItem[]);
     if (results[3].status === 'fulfilled') setBookings(results[3].value.data.data);
     if (results[4].status === 'fulfilled') setInventory(results[4].value.data.data as SalonInventoryAlerts);
     if (results[5].status === 'fulfilled') setSummary(results[5].value.data.data);
-    if (results[6].status === 'fulfilled') setRecentOrders(results[6].value.data.data);
+    if (results[6].status === 'fulfilled') setRecentOrders((results[6].value.data.data ?? []) as Order[]);
     setLoading(false);
   }, []);
 

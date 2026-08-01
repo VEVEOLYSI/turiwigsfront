@@ -19,7 +19,9 @@ export function useAuth() {
   useEffect(() => {
     if (!token) return;
     try {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const parts = token.split('.');
+      if (parts.length !== 3) return;
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
       const { exp } = JSON.parse(atob(base64)) as { exp?: number };
       if (!exp) return;
       const msUntilExpiry = exp * 1000 - Date.now();

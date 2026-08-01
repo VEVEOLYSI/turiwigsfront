@@ -172,7 +172,7 @@ export function DashboardShell({ children, navItems, role }: DashboardShellProps
             }}>
             <p className="truncate text-sm font-semibold"
               style={{ color: 'rgba(255,255,255,0.82)', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-              {user.name}
+              {user.name || user.email}
             </p>
             <p className="truncate text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>
               {user.email}
@@ -273,7 +273,7 @@ export function DashboardShell({ children, navItems, role }: DashboardShellProps
                 <div className="hidden sm:block text-right leading-none">
                   <p className="text-sm font-semibold"
                     style={{ color: '#1f2937', textShadow: '0 1px 0 rgba(255,255,255,0.9)' }}>
-                    {user.name}
+                    {user.name || user.email}
                   </p>
                   <p className="text-[10px] capitalize mt-0.5" style={{ color: '#9ca3af' }}>
                     {user.role}
@@ -281,7 +281,7 @@ export function DashboardShell({ children, navItems, role }: DashboardShellProps
                 </div>
                 <div className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                   style={AVATAR_STYLE}>
-                  {user.name[0].toUpperCase()}
+                  {(user.name || user.email || 'A')[0].toUpperCase()}
                 </div>
               </>
             )}

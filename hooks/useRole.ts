@@ -19,15 +19,16 @@ export interface RoleFlags {
 }
 
 export function useRole(): RoleFlags {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, token, loading, isAuthenticated } = useAuth();
 
+  const isAuthLoading = loading || (!!token && !user);
   const isAdmin = user?.role === 'admin';
   const isStaff = user?.role === 'staff';
 
   return {
     role: user?.role ?? null,
     user,
-    loading,
+    loading: isAuthLoading,
     isAuthenticated,
     isAdmin,
     isStaff,

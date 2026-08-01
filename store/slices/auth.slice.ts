@@ -92,10 +92,15 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = payload as string;
       })
-      .addCase(fetchMeThunk.fulfilled, (state, { payload }) => { state.user = payload; })
+      .addCase(fetchMeThunk.pending, (state) => { state.loading = true; })
+      .addCase(fetchMeThunk.fulfilled, (state, { payload }) => {
+        state.user = payload;
+        state.loading = false;
+      })
       .addCase(fetchMeThunk.rejected, (state) => {
         state.user = null;
         state.token = null;
+        state.loading = false;
         storage.remove(AUTH_TOKEN_KEY);
         storage.remove(AUTH_REFRESH_KEY);
       })
