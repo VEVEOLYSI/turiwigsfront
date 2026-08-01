@@ -17,7 +17,7 @@ export function useRealtimeRefresh(tables: string[], onRefresh: () => void) {
   const key = tables.slice().sort().join(',');
 
   useEffect(() => {
-    if (!tables.length) return;
+    if (!tables.length || !supabase) return;
 
     let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -40,7 +40,9 @@ export function useRealtimeRefresh(tables: string[], onRefresh: () => void) {
 
     return () => {
       if (timer) clearTimeout(timer);
-      supabase.removeChannel(channel);
+      if (supabase) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
 }
