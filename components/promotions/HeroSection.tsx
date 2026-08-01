@@ -6,16 +6,38 @@ import Image from 'next/image';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import heroData from '@/data/hero.json';
 import { Amatic_SC } from "next/font/google";
+import { homepageImagesApi, type HomepageImage } from '@/api/homepage-images.api';
 
 /* ── constants ───────────────────────────────────────────────────────────── */
 const HEADER_H = 66;
 const CARD_MS  = 5500;
 
-
 const amatic = Amatic_SC({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
+
+/* ── static fallback gallery ─────────────────────────────────────────────── */
+const STATIC_GALLERY = heroData.gallery;
+
+/* ── map a DB image row → carousel item ─────────────────────────────────── */
+interface GalleryItem {
+  src: string;
+  background: string;
+  text: string;
+  href: string;
+  label: string;
+}
+
+function toGalleryItem(img: HomepageImage): GalleryItem {
+  return {
+    src:        img.url,
+    background: img.url,
+    text:       img.caption ?? '',
+    href:       img.href    ?? '/services',
+    label:      img.label   ?? 'TIURI',
+  };
+}
 
 /* ── responsive card dimensions ─────────────────────────────────────────── */
 interface Dims { CW: number; CH: number; SW: number; SH: number; GAP: number }
@@ -142,12 +164,27 @@ function cardStyle(role: Role, d: Dims): React.CSSProperties {
 export function HeroSection() {
   const [activeCard, setActiveCard] = useState(0);
   const [dims, setDims] = useState<Dims>({ CW: 640, CH: 430, SW: 375, SH: 360, GAP: 52 });
+  const [gallery, setGallery] = useState<GalleryItem[]>(STATIC_GALLERY);
 
-  const vidRefs   = useRef<(HTMLVideoElement | null)[]>([]);
   const cardTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const N           = heroData.gallery.length;
-  const activeBackground = heroData.gallery[activeCard].background;
+  /* fetch dynamic images from backend */
+  useEffect(() => {
+    homepageImagesApi.list('hero')
+      .then(({ data }) => {
+        const heroImgs = data.data?.hero ?? [];
+        if (heroImgs.length > 0) {
+          setGallery(heroImgs.map(toGalleryItem));
+        }
+        // If DB is empty, keep static fallback already set in initial state
+      })
+      .catch(() => {
+        // On error keep static fallback silently
+      });
+  }, []);
+
+  const N                = gallery.length;
+  const activeBackground = gallery[activeCard]?.background ?? '';
 
   /* responsive dimensions */
   useEffect(() => {
@@ -157,7 +194,7 @@ export function HeroSection() {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  /* auto-advance card — video follows via activeVideo */
+  /* auto-advance card */
   useEffect(() => {
     cardTimer.current = setTimeout(
       () => setActiveCard((c) => (c + 1) % N),
@@ -165,19 +202,6 @@ export function HeroSection() {
     );
     return () => clearTimeout(cardTimer.current);
   }, [activeCard, N]);
-
-  /* sync video playback to active card */
-  // useEffect(() => {
-  //   vidRefs.current.forEach((vid, i) => {
-  //     if (!vid) return;
-  //     if (heroData.videos[i] === activeVideo) {
-  //       vid.currentTime = 0;
-  //       vid.play().catch(() => {});
-  //     } else {
-  //       vid.pause();
-  //     }
-  //   });
-  // }, [activeVideo]);
 
   return (
     <section
@@ -190,7 +214,7 @@ export function HeroSection() {
     >
       {/* ══ Video background — cover fills the entire page ══════════════════ */}
               <Image
-            src={heroData.gallery[activeCard].background}
+            src={activeBackground}
             alt="Hero Background"
             fill
             priority
@@ -297,7 +321,7 @@ export function HeroSection() {
 
         {/* Card stage */}
         <div className="relative w-full" style={{ height: dims.CH }}>
-          {heroData.gallery.map((item, i) => {
+          {gallery.map((item, i) => {
             const role     = getRole(i, activeCard, N);
             const isActive = role === 'active';
 

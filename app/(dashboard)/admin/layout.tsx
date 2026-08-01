@@ -8,7 +8,7 @@ import { PageSpinner } from '@/components/ui/Spinner';
 import {
   LayoutDashboard, ShoppingBag, Package, Users, Scissors,
   Layers, DollarSign, BarChart2, ClipboardList, Truck, Briefcase,
-  Cpu, Calendar, FileText, CalendarClock, UserCog,
+  Cpu, Calendar, FileText, CalendarClock, UserCog, Image,
 } from 'lucide-react';
 import type { NavItem } from '@/components/dashboard/DashboardShell';
 
@@ -23,7 +23,8 @@ const NAV: NavItem[] = [
   { label: 'Scheduling',  href: '/admin/scheduling',  icon: CalendarClock },
   { label: 'Products',    href: '/admin/products',   icon: Package },
   { label: 'Services',    href: '/admin/services',   icon: Scissors },
-  { label: 'Blog',        href: '/admin/blog',        icon: FileText },
+  { label: 'Blog',        href: '/admin/blog',             icon: FileText },
+  { label: 'Home Images', href: '/admin/homepage-images',  icon: Image },
 
   // ─ ERP
   { label: 'Inventory',   href: '/admin/inventory',  icon: Layers },

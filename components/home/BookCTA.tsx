@@ -1,11 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Calendar } from 'lucide-react';
+import { homepageImagesApi } from '@/api/homepage-images.api';
 
-/* 9 photos spread left-to-right across the full section */
-const BG_PHOTOS = [
+/* ── static fallback — 9 photos spread left-to-right across the full section */
+const STATIC_BG_PHOTOS = [
   { src: '/images/nails-8.jpeg',    rotate: -9,  left: '0%',   top: '8%',  w: '13%', h: '72%', z: 1 },
   { src: '/images/nails-5.jpeg',    rotate: -4,  left: '11%',  top: '28%', w: '12%', h: '56%', z: 2 },
   { src: '/images/nails-3.jpeg',    rotate: -1,  left: '21%',  top: '3%',  w: '13%', h: '70%', z: 3 },
@@ -17,7 +19,51 @@ const BG_PHOTOS = [
   { src: '/images/tiuri-wigs.jpeg', rotate: 11,  left: '87%',  top: '16%', w: '13%', h: '62%', z: 1 },
 ];
 
+/* ── layout presets for positioning the collage photos ─────────────────── */
+const LAYOUT_PRESETS = [
+  { rotate: -9,  left: '0%',   top: '8%',  w: '13%', h: '72%', z: 1 },
+  { rotate: -4,  left: '11%',  top: '28%', w: '12%', h: '56%', z: 2 },
+  { rotate: -1,  left: '21%',  top: '3%',  w: '13%', h: '70%', z: 3 },
+  { rotate:  3,  left: '32%',  top: '0%',  w: '11%', h: '58%', z: 2 },
+  { rotate: -4,  left: '31%',  top: '55%', w: '15%', h: '38%', z: 4 },
+  { rotate: -2,  left: '57%',  top: '1%',  w: '11%', h: '60%', z: 2 },
+  { rotate:  5,  left: '66%',  top: '22%', w: '13%', h: '58%', z: 3 },
+  { rotate:  8,  left: '77%',  top: '5%',  w: '12%', h: '66%', z: 2 },
+  { rotate: 11,  left: '87%',  top: '16%', w: '13%', h: '62%', z: 1 },
+];
+
+interface PhotoItem {
+  src: string;
+  rotate: number;
+  left: string;
+  top: string;
+  w: string;
+  h: string;
+  z: number;
+}
+
 export function BookCTA() {
+  const [bgPhotos, setBgPhotos] = useState<PhotoItem[]>(STATIC_BG_PHOTOS);
+
+  useEffect(() => {
+    homepageImagesApi.list('cta')
+      .then(({ data }) => {
+        const ctaImgs = data.data?.cta ?? [];
+        if (ctaImgs.length > 0) {
+          // Map backend images onto layout presets — cycle through presets if
+          // there are more images than presets, or use fewer if there are less.
+          const photos: PhotoItem[] = ctaImgs.map((img, i) => ({
+            src:    img.url,
+            ...LAYOUT_PRESETS[i % LAYOUT_PRESETS.length],
+          }));
+          setBgPhotos(photos);
+        }
+      })
+      .catch(() => {
+        // Keep static fallback on error
+      });
+  }, []);
+
   return (
     <section
       className="relative overflow-hidden"
@@ -25,7 +71,7 @@ export function BookCTA() {
     >
       {/* ── Photo collage background ──────────────────────────────────── */}
       <div className="hidden lg:block absolute inset-0 pointer-events-none" aria-hidden>
-        {BG_PHOTOS.map((p, i) => (
+        {bgPhotos.map((p, i) => (
           <div
             key={i}
             className="absolute overflow-hidden"
@@ -94,7 +140,7 @@ export function BookCTA() {
 
           <p className="text-sm sm:text-base leading-relaxed mb-8 mx-auto max-w-sm"
             style={{ color: 'rgba(10,46,31,0.6)' }}>
-            Secure your spot at Tiuri Nails & Wigs Parlour — manicures, pedicures,
+            Secure your spot at Tiuri Nails &amp; Wigs Parlour — manicures, pedicures,
             and premium wig styling all in one beautiful place.
           </p>
 
@@ -123,7 +169,7 @@ export function BookCTA() {
       {/* ── Mobile — simple grid + text ───────────────────────────────── */}
       <div className="lg:hidden py-16 px-4">
         <div className="grid grid-cols-3 gap-2 mb-10">
-          {BG_PHOTOS.slice(0, 6).map((p, i) => (
+          {bgPhotos.slice(0, 6).map((p, i) => (
             <div key={i} className="relative overflow-hidden"
               style={{ borderRadius: 10, border: '3px solid #fff',
                 boxShadow: '0 6px 20px rgba(0,0,0,0.1)', aspectRatio: '3/4' }}>
