@@ -5,31 +5,6 @@ import Image from 'next/image';
 import { Shuffle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { homepageImagesApi } from '@/api/homepage-images.api';
 
-/* ── static fallback image sets ─────────────────────────────────────────── */
-const STATIC_NAILS_IMAGES = [
-  '/images/nails-1.jpeg',
-  '/images/nails-2.jpeg',
-  '/images/nails-3.jpeg',
-  '/images/nails-4.jpeg',
-  '/images/nails-5.jpeg',
-  '/images/nails-6.jpeg',
-  '/images/nails-7.jpeg',
-  '/images/nails-8.jpeg',
-  '/images/nails-9.jpeg',
-  '/images/nails-10.jpeg',
-  '/images/tiuri-nails.jpeg',
-];
-
-const STATIC_WIGS_IMAGES = [
-  '/images/salon-4.jpeg',
-  '/images/salon-5.jpeg',
-  '/images/tiuri-wigs.jpeg',
-];
-
-/* ── fan-scatter slot presets ────────────────────────────────────────────────
-   Desktop/tablet presets keep the original wide spread. Mobile presets are
-   deliberately tighter (left + width never exceeds 100%) so nothing spills
-   past the edge of a narrow screen. ─────────────────────────────────────── */
 type SlotPreset = { top: string; left: string; rotate: number; z: number; wPct: number; hPct: number };
 
 const SLOTS_6: SlotPreset[] = [
@@ -62,11 +37,8 @@ const SLOTS_3_MOBILE: SlotPreset[] = [
   { top: '4%',  left: '54%', rotate: 9,  z: 3, wPct: 42, hPct: 56 },
 ];
 
-/* ── responsive breakpoint sizing ─────────────────────────────────────────────
-   controls container width cap + height so slots render at sensible
-   absolute sizes on every screen from small phones to desktop ─────────── */
 function getStageWidth(vw: number): number {
-  if (vw < 640) return Math.min(vw - 48, 320);   // account for section px-4/6 padding
+  if (vw < 640) return Math.min(vw - 48, 320);
   if (vw < 768) return Math.min(vw - 64, 400);
   if (vw < 1024) return Math.min((vw - 96) / 2, 380);
   if (vw < 1280) return Math.min((vw - 128) / 2, 430);
@@ -82,13 +54,12 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/* ── reusable fan gallery: one instance per category ────────────────────── */
 interface PhotoFanProps {
   title: string;
   images: string[];
   slots: SlotPreset[];
   mobileSlots: SlotPreset[];
-  heightRatio: number; // stage height as a fraction of stage width
+  heightRatio: number;
 }
 
 function PhotoFan({ title, images, slots, mobileSlots, heightRatio }: PhotoFanProps) {
@@ -98,13 +69,10 @@ function PhotoFan({ title, images, slots, mobileSlots, heightRatio }: PhotoFanPr
   const [stageWidth, setStageWidth] = useState(420);
   const [isMobile, setIsMobile]   = useState(false);
 
-  // Reshuffle when the images array changes (i.e. when backend data arrives)
   useEffect(() => {
     setOrder(shuffle(images).slice(0, slots.length));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [images]);
+  }, [images, slots.length]);
 
-  /* responsive stage width, debounced */
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     function update() {
@@ -128,7 +96,7 @@ function PhotoFan({ title, images, slots, mobileSlots, heightRatio }: PhotoFanPr
   const stageHeight = Math.round(stageWidth * heightRatio);
 
   const handleShuffle = useCallback(() => {
-    if (animating) return;
+    if (animating || images.length === 0) return;
     setAnimating(true);
     setTimeout(() => {
       setOrder(shuffle(images).slice(0, slots.length));
@@ -158,6 +126,10 @@ function PhotoFan({ title, images, slots, mobileSlots, heightRatio }: PhotoFanPr
     return () => window.removeEventListener('keydown', onKey);
   }, [lightboxIndex, closeLightbox, prevImg, nextImg]);
 
+  if (images.length === 0) {
+    return null; // Keep section completely blank when no images uploaded by admin
+  }
+
   return (
     <div className="flex flex-col items-center gap-5 sm:gap-6 w-full min-w-0">
       <p
@@ -167,8 +139,6 @@ function PhotoFan({ title, images, slots, mobileSlots, heightRatio }: PhotoFanPr
         {title}
       </p>
 
-      {/* overflow-hidden here is the key fix: cards can never bleed past
-          the stage bounds regardless of rotation/positioning rounding */}
       <div
         className="relative w-full max-w-full overflow-hidden"
         style={{ height: stageHeight }}
@@ -231,7 +201,6 @@ function PhotoFan({ title, images, slots, mobileSlots, heightRatio }: PhotoFanPr
         Shuffle {title}
       </button>
 
-      {/* ── lightbox ─────────────────────────────────────────────────────── */}
       {lightboxIndex !== null && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/92 backdrop-blur-sm px-3 sm:px-4"
@@ -291,26 +260,26 @@ function PhotoFan({ title, images, slots, mobileSlots, heightRatio }: PhotoFanPr
   );
 }
 
-/* ── section: nails + wigs, responsive layout ────────────────────────────── */
 export function Philosophy() {
-  const [nailsImages, setNailsImages] = useState<string[]>(STATIC_NAILS_IMAGES);
-  const [wigsImages,  setWigsImages]  = useState<string[]>(STATIC_WIGS_IMAGES);
+  const [nailsImages, setNailsImages] = useState<string[]>([]);
+  const [wigsImages,  setWigsImages]  = useState<string[]>([]);
 
   useEffect(() => {
     homepageImagesApi.list()
       .then(({ data }) => {
         const grouped = data.data ?? {};
-        if (grouped.philosophy_nails && grouped.philosophy_nails.length > 0) {
-          setNailsImages(grouped.philosophy_nails.map((img) => img.url));
-        }
-        if (grouped.philosophy_wigs && grouped.philosophy_wigs.length > 0) {
-          setWigsImages(grouped.philosophy_wigs.map((img) => img.url));
-        }
+        setNailsImages((grouped.philosophy_nails ?? []).map((img) => img.url));
+        setWigsImages((grouped.philosophy_wigs ?? []).map((img) => img.url));
       })
       .catch(() => {
-        // Keep static fallback on error
+        setNailsImages([]);
+        setWigsImages([]);
       });
   }, []);
+
+  if (nailsImages.length === 0 && wigsImages.length === 0) {
+    return null; // Keep section completely blank when no images posted
+  }
 
   return (
     <section className="py-14 sm:py-20 lg:py-28 overflow-x-hidden" style={{ background: '#ffffff' }}>

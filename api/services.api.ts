@@ -2,7 +2,10 @@ import client from './client';
 import type { ApiResponse, Service, ServiceSlot } from '@/types';
 
 export const servicesApi = {
-  list: () => client.get<ApiResponse<Service[]>>('/services'),
+  list: (category?: string) =>
+    client.get<ApiResponse<Service[]>>('/services', {
+      params: category ? { category } : undefined,
+    }),
 
   getBySlug: (slug: string) =>
     client.get<ApiResponse<Service>>(`/services/${slug}`),

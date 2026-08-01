@@ -14,4 +14,14 @@ export const uploadApi = {
       { headers: { 'Content-Type': undefined } }
     );
   },
+  video: (file: File, folder: UploadFolder = 'services') => {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('folder', folder);
+    return client.post<ApiResponse<{ url: string; publicId: string; duration?: number }>>(
+      '/upload/video',
+      form,
+      { headers: { 'Content-Type': undefined } }
+    );
+  },
 };

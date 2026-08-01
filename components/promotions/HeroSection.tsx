@@ -17,9 +17,6 @@ const amatic = Amatic_SC({
   weight: ["400", "700"],
 });
 
-/* ── static fallback gallery ─────────────────────────────────────────────── */
-const STATIC_GALLERY = heroData.gallery;
-
 /* ── map a DB image row → carousel item ─────────────────────────────────── */
 interface GalleryItem {
   src: string;
@@ -76,10 +73,6 @@ const TRANS = [
   'transform 560ms cubic-bezier(0.4,0,0.2,1)',
 ].join(',');
 
-/*
- * Curved carousel: side cards rotate on Y-axis and recede in Z,
- * giving the illusion they sit along an invisible arc behind the active card.
- */
 function cardStyle(role: Role, d: Dims): React.CSSProperties {
   const base: React.CSSProperties = {
     position:      'absolute',
@@ -100,7 +93,6 @@ function cardStyle(role: Role, d: Dims): React.CSSProperties {
         width: d.CW,     height: d.CH,
         opacity:         1,
         zIndex:          10,
-        /* sits closest to viewer — no rotation, full scale */
         transform:       'perspective(1100px) rotateY(0deg) translateZ(0px) scale(1)',
         transformOrigin: 'center bottom',
         boxShadow:       '0 28px 90px rgba(0,0,0,0.72)',
@@ -113,7 +105,6 @@ function cardStyle(role: Role, d: Dims): React.CSSProperties {
         width: d.SW,     height: d.SH,
         opacity:         0.82,
         zIndex:          5,
-        /* rotated toward viewer on the right edge, receding in Z */
         transform:       'perspective(1100px) rotateY(7deg) translateZ(-55px) scale(0.93)',
         transformOrigin: 'right bottom',
         boxShadow:       '0 16px 50px rgba(0,0,0,0.48)',
@@ -126,14 +117,11 @@ function cardStyle(role: Role, d: Dims): React.CSSProperties {
         width: d.SW,     height: d.SH,
         opacity:         0.82,
         zIndex:          5,
-        /* mirror of prev — rotates and recedes on the left edge */
         transform:       'perspective(1100px) rotateY(-7deg) translateZ(-55px) scale(0.93)',
         transformOrigin: 'left bottom',
         boxShadow:       '0 16px 50px rgba(0,0,0,0.48)',
       };
 
-    /* hidden cards are pre-positioned on their eventual side so they fade
-       in without flying across the screen when they become visible */
     case 'hidden-l':
       return {
         ...base,
@@ -164,7 +152,7 @@ function cardStyle(role: Role, d: Dims): React.CSSProperties {
 export function HeroSection() {
   const [activeCard, setActiveCard] = useState(0);
   const [dims, setDims] = useState<Dims>({ CW: 640, CH: 430, SW: 375, SH: 360, GAP: 52 });
-  const [gallery, setGallery] = useState<GalleryItem[]>(STATIC_GALLERY);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
 
   const cardTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -173,18 +161,15 @@ export function HeroSection() {
     homepageImagesApi.list('hero')
       .then(({ data }) => {
         const heroImgs = data.data?.hero ?? [];
-        if (heroImgs.length > 0) {
-          setGallery(heroImgs.map(toGalleryItem));
-        }
-        // If DB is empty, keep static fallback already set in initial state
+        setGallery(heroImgs.map(toGalleryItem));
       })
       .catch(() => {
-        // On error keep static fallback silently
+        setGallery([]);
       });
   }, []);
 
   const N                = gallery.length;
-  const activeBackground = gallery[activeCard]?.background ?? '';
+  const activeBackground = gallery[activeCard]?.background;
 
   /* responsive dimensions */
   useEffect(() => {
@@ -196,6 +181,7 @@ export function HeroSection() {
 
   /* auto-advance card */
   useEffect(() => {
+    if (N === 0) return;
     cardTimer.current = setTimeout(
       () => setActiveCard((c) => (c + 1) % N),
       CARD_MS,
@@ -212,15 +198,17 @@ export function HeroSection() {
         background: '#080808',
       }}
     >
-      {/* ══ Video background — cover fills the entire page ══════════════════ */}
-              <Image
-            src={activeBackground}
-            alt="Hero Background"
-            fill
-            priority
-            className="absolute inset-0 object-cover"
-            sizes="100vw"
-          />
+      {/* ══ Video/Image background — cover fills the entire page ══════════════════ */}
+      {activeBackground && (
+        <Image
+          src={activeBackground}
+          alt="Hero Background"
+          fill
+          priority
+          className="absolute inset-0 object-cover"
+          sizes="100vw"
+        />
+      )}
 
       {/* ══ Gradient overlay ════════════════════════════════════════════════ */}
       <div
@@ -249,19 +237,19 @@ export function HeroSection() {
         </p>
 
         <h1
-              className="max-w-4xl mx-auto text-white font-semibold tracking-[0.08em] leading-[1.2] drop-shadow-md"
-              style={{
-                fontSize: "clamp(0.8rem, 2.5vw, 2.5rem)",
-                lineHeight: 1.1,
-              }}
-            >
-              {heroData.headline.map((line, index) => (
-                <span key={index}>
-                  {line}
-                  {index !== heroData.headline.length - 1 && <br />}
-                </span>
-              ))}
-            </h1>
+          className="max-w-4xl mx-auto text-white font-semibold tracking-[0.08em] leading-[1.2] drop-shadow-md"
+          style={{
+            fontSize: "clamp(0.8rem, 2.5vw, 2.5rem)",
+            lineHeight: 1.1,
+          }}
+        >
+          {heroData.headline.map((line, index) => (
+            <span key={index}>
+              {line}
+              {index !== heroData.headline.length - 1 && <br />}
+            </span>
+          ))}
+        </h1>
 
         <div className="mt-7 sm:mt-9 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -297,141 +285,130 @@ export function HeroSection() {
       </div>
 
       {/* ══ Curved card carousel ════════════════════════════════════════════ */}
-      <div
-        className="relative z-20 flex-shrink-0"
-        style={{ height: dims.CH + 40 }}
-      >
-        {/* Prev arrow */}
-        <button
-          onClick={() => setActiveCard((c) => (c - 1 + N) % N)}
-          className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all"
-          style={{ width: dims.CW < 400 ? 32 : 40, height: dims.CW < 400 ? 32 : 40 }}
+      {N > 0 && (
+        <div
+          className="relative z-20 flex-shrink-0"
+          style={{ height: dims.CH + 40 }}
         >
-          <ChevronLeft className="text-white" style={{ width: dims.CW < 400 ? 14 : 18, height: dims.CW < 400 ? 14 : 18 }} />
-        </button>
+          {/* Prev arrow */}
+          <button
+            onClick={() => setActiveCard((c) => (c - 1 + N) % N)}
+            className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all"
+            style={{ width: dims.CW < 400 ? 32 : 40, height: dims.CW < 400 ? 32 : 40 }}
+          >
+            <ChevronLeft className="text-white" style={{ width: dims.CW < 400 ? 14 : 18, height: dims.CW < 400 ? 14 : 18 }} />
+          </button>
 
-        {/* Next arrow */}
-        <button
-          onClick={() => setActiveCard((c) => (c + 1) % N)}
-          className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all"
-          style={{ width: dims.CW < 400 ? 32 : 40, height: dims.CW < 400 ? 32 : 40 }}
-        >
-          <ChevronRight className="text-white" style={{ width: dims.CW < 400 ? 14 : 18, height: dims.CW < 400 ? 14 : 18 }} />
-        </button>
+          {/* Next arrow */}
+          <button
+            onClick={() => setActiveCard((c) => (c + 1) % N)}
+            className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all"
+            style={{ width: dims.CW < 400 ? 32 : 40, height: dims.CW < 400 ? 32 : 40 }}
+          >
+            <ChevronRight className="text-white" style={{ width: dims.CW < 400 ? 14 : 18, height: dims.CW < 400 ? 14 : 18 }} />
+          </button>
 
-        {/* Card stage */}
-        <div className="relative w-full" style={{ height: dims.CH }}>
-          {gallery.map((item, i) => {
-            const role     = getRole(i, activeCard, N);
-            const isActive = role === 'active';
+          {/* Card stage */}
+          <div className="relative w-full" style={{ height: dims.CH }}>
+            {gallery.map((item, i) => {
+              const role     = getRole(i, activeCard, N);
+              const isActive = role === 'active';
 
-            return (
-              <div key={item.src} style={cardStyle(role, dims)}>
+              return (
+                <div key={item.src} style={cardStyle(role, dims)}>
 
-                {/* Mini website header */}
-                <div
-                  className="flex-shrink-0 flex items-center justify-between gap-2 px-3 sm:px-4"
-                  style={{
-                    height:       36,
-                    background:   '#100e0a',
-                    borderBottom: '1px solid rgba(255,255,255,0.07)',
-                  }}
-                >
-                  <span
-                    className="font-bold tracking-[0.16em] text-white whitespace-nowrap"
-                    style={{ fontSize: 9 }}
-                  >
-                    TIURI
-                  </span>
-
-                  <div className="hidden sm:flex items-center gap-3 flex-1 justify-center">
-                    {[''].map((l) => (
-                      <span
-                        key={l}
-                        style={{ fontSize: 8, color: 'rgba(255,255,255,0.36)', letterSpacing: '0.05em' }}
-                      >
-                        {l}
-                      </span>
-                    ))}
-                  </div>
-
-                  
-                </div>
-
-                {/* Full-bleed image */}
-                <div className="relative flex-1">
-                  <Image
-                    src={item.src}
-                    alt={item.text}
-                    fill
-                    className="object-cover"
-                    sizes={`(max-width: 640px) 70vw, (max-width: 1024px) 52vw, 640px`}
-                    priority={i < 3}
-                  />
-
-                  {/* Dark gradient for text contrast */}
+                  {/* Mini website header */}
                   <div
-                    className="absolute inset-0"
+                    className="flex-shrink-0 flex items-center justify-between gap-2 px-3 sm:px-4"
                     style={{
-                      background:
-                        'linear-gradient(to top,' +
-                        'rgba(0,0,0,0.88) 0%,' +
-                        'rgba(0,0,0,0.16) 50%,' +
-                        'transparent 100%)',
-                    }}
-                  />
-
-                  {/* Gold badge — tilted like the PLANTS sticker */}
-                  <div
-                    className="absolute top-3 left-3 sm:top-5 sm:left-5 rounded-full"
-                    style={{
-                      background:  '#c9a227',
-                      padding:     isActive ? '7px 14px' : '5px 10px',
-                      transform:   'rotate(-2deg)',
-                      boxShadow:   '0 4px 16px rgba(0,0,0,0.35)',
-                      transition:  'padding 560ms ease',
+                      height:       36,
+                      background:   '#100e0a',
+                      borderBottom: '1px solid rgba(255,255,255,0.07)',
                     }}
                   >
                     <span
-                      className="font-black text-white"
-                      style={{ fontSize: isActive ? 10 : 8, letterSpacing: '0.2em' }}
+                      className="font-bold tracking-[0.16em] text-white whitespace-nowrap"
+                      style={{ fontSize: 9 }}
                     >
-                      {item.label}
+                      TIURI
                     </span>
                   </div>
 
-                  {/* Text overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 sm:px-6 sm:pb-5">
-                    <p
-                      className="text-white font-bold leading-tight"
+                  {/* Full-bleed image */}
+                  <div className="relative flex-1">
+                    <Image
+                      src={item.src}
+                      alt={item.text}
+                      fill
+                      className="object-cover"
+                      sizes={`(max-width: 640px) 70vw, (max-width: 1024px) 52vw, 640px`}
+                      priority={i < 3}
+                    />
+
+                    {/* Dark gradient for text contrast */}
+                    <div
+                      className="absolute inset-0"
                       style={{
-                        fontSize:    isActive
-                          ? (dims.CW < 350 ? 14 : dims.CW < 500 ? 17 : 21)
-                          : (dims.SW < 160 ? 9  : 12),
-                        textShadow:  '0 2px 8px rgba(0,0,0,0.6)',
-                        transition:  'font-size 560ms ease',
+                        background:
+                          'linear-gradient(to top,' +
+                          'rgba(0,0,0,0.88) 0%,' +
+                          'rgba(0,0,0,0.16) 50%,' +
+                          'transparent 100%)',
+                      }}
+                    />
+
+                    {/* Gold badge */}
+                    <div
+                      className="absolute top-3 left-3 sm:top-5 sm:left-5 rounded-full"
+                      style={{
+                        background:  '#c9a227',
+                        padding:     isActive ? '7px 14px' : '5px 10px',
+                        transform:   'rotate(-2deg)',
+                        boxShadow:   '0 4px 16px rgba(0,0,0,0.35)',
+                        transition:  'padding 560ms ease',
                       }}
                     >
-                      {item.text}
-                    </p>
-
-                    {isActive && (
-                      <Link
-                        href={item.href}
-                        className="mt-2 sm:mt-3 inline-flex items-center gap-1 sm:gap-1.5 uppercase tracking-widest text-white/60 hover:text-white transition-colors"
-                        style={{ fontSize: 9, fontWeight: 600 }}
+                      <span
+                        className="font-black text-white"
+                        style={{ fontSize: isActive ? 10 : 8, letterSpacing: '0.2em' }}
                       >
-                        View More <ArrowRight style={{ width: 9, height: 9 }} />
-                      </Link>
-                    )}
-                  </div>
-                </div>
+                        {item.label}
+                      </span>
+                    </div>
 
-              </div>
-            );
-          })}
+                    {/* Text overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 sm:px-6 sm:pb-5">
+                      <p
+                        className="text-white font-bold leading-tight"
+                        style={{
+                          fontSize:    isActive
+                            ? (dims.CW < 350 ? 14 : dims.CW < 500 ? 17 : 21)
+                            : (dims.SW < 160 ? 9  : 12),
+                          textShadow:  '0 2px 8px rgba(0,0,0,0.6)',
+                          transition:  'font-size 560ms ease',
+                        }}
+                      >
+                        {item.text}
+                      </p>
+
+                      {isActive && (
+                        <Link
+                          href={item.href}
+                          className="mt-2 sm:mt-3 inline-flex items-center gap-1 sm:gap-1.5 uppercase tracking-widest text-white/60 hover:text-white transition-colors"
+                          style={{ fontSize: 9, fontWeight: 600 }}
+                        >
+                          View More <ArrowRight style={{ width: 9, height: 9 }} />
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

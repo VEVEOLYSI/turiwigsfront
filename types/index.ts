@@ -78,6 +78,8 @@ export interface Service {
   duration_minutes: number;
   capacity: number;
   images: ProductImage[];
+  category?: string;
+  video_url?: string;
   is_featured: boolean;
 }
 

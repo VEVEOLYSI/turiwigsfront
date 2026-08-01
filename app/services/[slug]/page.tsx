@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { Clock, Users, ArrowLeft, CalendarDays } from 'lucide-react';
+import { Clock, Users, ArrowLeft, CalendarDays, Volume2, VolumeX, Play, Pause } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { servicesApi } from '@/api/services.api';
 import { formatPrice } from '@/utils/formatters';
 import { Button } from '@/components/ui/Button';
@@ -46,6 +47,11 @@ export default function ServiceDetailPage() {
     balanceAmount: number;
   } | null>(null);
 
+  // Video state
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
+
   // Load service once
   useEffect(() => {
     servicesApi.getBySlug(slug)
@@ -63,6 +69,25 @@ export default function ServiceDetailPage() {
       .catch(() => setSlots([]))
       .finally(() => setSlotsLoading(false));
   }, [service, selectedDate]);
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
 
   const handleBook = async () => {
     if (!isAuthenticated) { router.push('/auth/login'); return; }
@@ -96,8 +121,10 @@ export default function ServiceDetailPage() {
   if (loading) return <PageSpinner />;
   if (!service) return <div className="p-10 text-center text-neutral-500">Service not found</div>;
 
+  const mainImageUrl = service.images?.[0]?.url ?? '/images/nails-1.jpeg';
+
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <div style={{ background: '#faf6ed', minHeight: '100vh' }}>
       {paymentModal && (
         <BookingPaymentModal
           bookingId={paymentModal.bookingId}
@@ -111,80 +138,197 @@ export default function ServiceDetailPage() {
           onClose={() => setPaymentModal(null)}
         />
       )}
-      <Link href="/services" className="mb-6 inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors">
-        <ArrowLeft className="h-4 w-4" /> All Services
-      </Link>
 
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 sm:text-3xl">{service.name}</h1>
-          {service.description && <p className="mt-3 text-neutral-600 leading-relaxed">{service.description}</p>}
-          <div className="mt-4 flex flex-wrap gap-4">
-            <div className="flex items-center gap-2 text-sm text-neutral-600">
-              <Clock className="h-4 w-4 text-neutral-400" />
-              {service.duration_minutes} minutes
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-16">
+        <Link href="/services" className="mb-6 inline-flex items-center gap-2 text-sm font-medium transition-colors" style={{ color: '#0a2e1f' }}>
+          <ArrowLeft className="h-4 w-4" style={{ color: '#c9a227' }} /> Back to All Services
+        </Link>
+
+        {/* Instagram-inspired Main Split Card */}
+        <div 
+          className="rounded-3xl border overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-12"
+          style={{ borderColor: '#e0d0b0', background: '#ffffff' }}
+        >
+          {/* LEFT / TOP: Media Container (Video or Image) */}
+          <div className="lg:col-span-6 xl:col-span-7 bg-black relative flex items-center justify-center min-h-[420px] lg:min-h-[600px] overflow-hidden">
+            {service.video_url ? (
+              <div className="relative w-full h-full min-h-[420px] lg:min-h-[600px] flex items-center justify-center bg-black">
+                <video
+                  ref={videoRef}
+                  src={service.video_url}
+                  autoPlay
+                  loop
+                  muted={isMuted}
+                  playsInline
+                  onClick={togglePlay}
+                  className="w-full h-full max-h-[700px] object-cover cursor-pointer"
+                />
+
+                {/* Media overlay controls */}
+                <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+
+                {/* Top brand badge */}
+                <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-xs font-semibold border border-white/20">
+                  <div className="w-6 h-6 rounded-full bg-amber-500 text-black font-extrabold flex items-center justify-center text-[10px]">
+                    T
+                  </div>
+                  <span>tiurinailspalour</span>
+                </div>
+
+                {/* Play/Pause indicator on click */}
+                <button 
+                  onClick={togglePlay}
+                  className="absolute inset-0 flex items-center justify-center bg-transparent group focus:outline-none"
+                >
+                  {!isPlaying && (
+                    <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110">
+                      <Play className="h-8 w-8 fill-white translate-x-0.5" />
+                    </div>
+                  )}
+                </button>
+
+                {/* Video Mute Toggle */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleMute(); }}
+                  className="absolute bottom-4 right-4 z-10 w-10 h-10 rounded-full bg-black/70 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/90 transition-colors border border-white/20"
+                  aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+                >
+                  {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                </button>
+              </div>
+            ) : (
+              <div className="relative w-full h-full min-h-[420px] lg:min-h-[600px] bg-neutral-900">
+                <Image
+                  src={mainImageUrl}
+                  alt={service.name}
+                  fill
+                  priority
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+                <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-xs font-semibold border border-white/20">
+                  <div className="w-6 h-6 rounded-full bg-amber-500 text-black font-extrabold flex items-center justify-center text-[10px]">
+                    T
+                  </div>
+                  <span>tiurinailspalour</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT / BOTTOM: Details & Booking Panel */}
+          <div className="lg:col-span-6 xl:col-span-5 p-6 sm:p-8 flex flex-col justify-between" style={{ background: '#ffffff' }}>
+            <div>
+              {/* Category & Badge */}
+              <div className="flex items-center gap-2 mb-3">
+                {service.category && (
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full text-amber-900 bg-amber-100 border border-amber-200">
+                    {service.category.replace('-', ' ')}
+                  </span>
+                )}
+                {service.is_featured && (
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full text-emerald-900 bg-emerald-100 border border-emerald-200">
+                    Popular
+                  </span>
+                )}
+              </div>
+
+              {/* Service Title & Price */}
+              <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight mb-2" style={{ color: '#0a2e1f' }}>
+                {service.name}
+              </h1>
+
+              <div className="flex items-baseline gap-3 mb-6">
+                <span className="text-2xl font-black" style={{ color: '#0a2e1f' }}>
+                  {formatPrice(service.price)}
+                </span>
+                <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#9a8060' }}>
+                  <Clock className="h-3.5 w-3.5" />
+                  {service.duration_minutes} minutes
+                </span>
+                <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#9a8060' }}>
+                  <Users className="h-3.5 w-3.5" />
+                  Max {service.capacity}
+                </span>
+              </div>
+
+              {/* Description */}
+              {service.description && (
+                <div className="mb-6 p-4 rounded-xl text-sm leading-relaxed" style={{ background: '#faf6ed', color: '#4b5563', borderLeft: '3px solid #c9a227' }}>
+                  {service.description}
+                </div>
+              )}
+
+              {/* Date & Slot Picker */}
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: '#0a2e1f' }}>
+                    <CalendarDays className="h-4 w-4" style={{ color: '#c9a227' }} />
+                    Select Date
+                  </label>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    min={todayIso()}
+                    onChange={(e) => { if (e.target.value) setSelectedDate(e.target.value); }}
+                    className="rounded-xl border px-3 py-1.5 text-xs font-semibold text-neutral-800 outline-none focus:ring-2"
+                    style={{ borderColor: '#e0d0b0', background: '#faf6ed' }}
+                  />
+                </div>
+
+                <div className="border-t pt-4" style={{ borderColor: '#f0e8d0' }}>
+                  <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#0a2e1f' }}>
+                    Available Slots
+                  </h3>
+
+                  {slotsLoading ? (
+                    <div className="flex justify-center py-6">
+                      <div className="h-6 w-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#c9a227', borderTopColor: 'transparent' }} />
+                    </div>
+                  ) : !slots.length ? (
+                    <p className="text-xs text-neutral-500 py-2">No slots available on this day. Please select another date.</p>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2 max-h-[180px] overflow-y-auto pr-1">
+                      {slots.map((slot) => {
+                        const key = slot.id ?? slot.start_time;
+                        const isSelected = selectedSlot === key;
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => setSelectedSlot(isSelected ? null : key)}
+                            className="rounded-xl p-2.5 text-center text-xs transition-all font-medium border"
+                            style={{
+                              background: isSelected ? '#0a2e1f' : '#faf6ed',
+                              borderColor: isSelected ? '#0a2e1f' : '#e0d0b0',
+                              color: isSelected ? '#f0d878' : '#374151',
+                              boxShadow: isSelected ? '0 2px 8px rgba(10,46,31,0.2)' : 'none',
+                            }}
+                          >
+                            <p className="font-bold">{formatSlotTime(slot.start_time)}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-neutral-600">
-              <Users className="h-4 w-4 text-neutral-400" />
-              Capacity: {service.capacity}
+
+            {/* Bottom Booking Button */}
+            <div className="pt-4 border-t" style={{ borderColor: '#f0e8d0' }}>
+              <Button 
+                fullWidth 
+                size="lg" 
+                onClick={handleBook} 
+                loading={booking} 
+                disabled={!selectedSlot || slotsLoading}
+                className="btn-gold shadow-lg py-3.5 text-base"
+              >
+                {isAuthenticated ? `Book Appointment · ${formatPrice(service.price)}` : 'Sign in to Book'}
+              </Button>
             </div>
-            <span className="text-xl font-bold text-neutral-900">{formatPrice(service.price)}</span>
           </div>
         </div>
-
-        {/* Date + Slot picker */}
-        <div className="rounded-2xl border border-neutral-200 p-5 space-y-4">
-          {/* Date selector */}
-          <div className="flex items-center gap-3">
-            <CalendarDays className="h-4 w-4 text-neutral-400 shrink-0" />
-            <label className="text-sm font-semibold text-neutral-700 shrink-0">Select date</label>
-            <input
-              type="date"
-              value={selectedDate}
-              min={todayIso()}
-              onChange={(e) => { if (e.target.value) setSelectedDate(e.target.value); }}
-              className="ml-auto rounded-xl border border-neutral-200 px-3 py-1.5 text-sm text-neutral-800 outline-none focus:border-neutral-400"
-            />
-          </div>
-
-          <hr className="border-neutral-100" />
-
-          <h2 className="font-semibold text-neutral-900">Available times</h2>
-
-          {slotsLoading ? (
-            <div className="flex justify-center py-6">
-              <div className="h-6 w-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#c9a227', borderTopColor: 'transparent' }} />
-            </div>
-          ) : !slots.length ? (
-            <p className="text-sm text-neutral-500">No slots available on this day. Try a different date.</p>
-          ) : (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {slots.map((slot) => {
-                const key = slot.id ?? slot.start_time;
-                const isSelected = selectedSlot === key;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedSlot(isSelected ? null : key)}
-                    className="rounded-xl border p-3 text-center text-sm transition-all"
-                    style={{
-                      background: isSelected ? '#0a2e1f' : '#fff',
-                      borderColor: isSelected ? '#0a2e1f' : '#e5e7eb',
-                      color: isSelected ? '#fff' : '#374151',
-                    }}
-                  >
-                    <p className="font-semibold">{formatSlotTime(slot.start_time)}</p>
-                    <p className="text-xs mt-0.5 opacity-70">{formatSlotTime(slot.end_time)}</p>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <Button fullWidth size="lg" onClick={handleBook} loading={booking} disabled={!selectedSlot || slotsLoading}>
-          {isAuthenticated ? `Book · ${formatPrice(service.price)}` : 'Sign in to Book'}
-        </Button>
       </div>
     </div>
   );
