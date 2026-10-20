@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Search } from 'lucide-react';
 import { servicesApi } from '@/api/services.api';
+import { useAuth } from '@/hooks/useAuth';
 import { BookingServiceCard } from '@/components/bookings/BookingServiceCard';
 import { BookingStepBar } from '@/components/bookings/BookingStepBar';
 import type { Service } from '@/types';
@@ -21,6 +22,8 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  // Guests have no bookings dashboard to go back to.
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     servicesApi
@@ -43,7 +46,7 @@ export default function ServicesPage() {
         {/* Header */}
         <div className="flex items-center gap-3 mb-5">
           <Link
-            href="/bookings"
+            href={isAuthenticated ? '/bookings' : '/'}
             className="w-9 h-9 flex items-center justify-center rounded-full"
             style={{ background: '#fff', border: '1px solid #dedcd7' }}
           >

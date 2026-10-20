@@ -182,6 +182,12 @@ export interface Booking {
   notes?: string;
   services?: { name: string; duration_minutes: number };
   created_at: string;
+  // Present on rows from the admin booking_calendar view.
+  service_name?: string;
+  customer_name?: string | null;
+  customer_email?: string | null;
+  guest_phone?: string | null;
+  source?: 'web' | 'whatsapp';
 }
 
 // ─── Review ───────────────────────────────────────────────────────────────────

@@ -15,6 +15,8 @@ import { Badge } from '@/components/ui/Badge';
 import { StarRating } from '@/components/ui/StarRating';
 import { PageSpinner } from '@/components/ui/Spinner';
 import { useAuth } from '@/hooks/useAuth';
+import { whatsappLink } from '@/config/contact';
+import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 import type { Product, ProductVariant, Review } from '@/types';
@@ -248,7 +250,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex w-full gap-3">
             <Button
               fullWidth
               size="lg"
@@ -272,6 +274,19 @@ export default function ProductDetailPage() {
               <Heart className={cn('h-5 w-5', wishlisted && 'fill-current')} />
             </button>
           </div>
+
+          {/* No account needed: the order goes out as a WhatsApp message. */}
+          <a
+            href={whatsappLink(
+              buildOrderMessage(product, selectedVariant, quantity, effectivePrice, variantStock === 0)
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-outline w-full"
+          >
+            <WhatsAppIcon className="h-4 w-4 text-[#167a45]" />
+            {variantStock === 0 ? 'Ask about this wig on WhatsApp' : 'Order on WhatsApp'}
+          </a>
 
           {/* Description */}
           {product.description && (
@@ -328,6 +343,35 @@ export default function ProductDetailPage() {
       </div>
     </div>
   );
+}
+
+function buildOrderMessage(
+  product: Product,
+  variant: ProductVariant | null,
+  quantity: number,
+  unitPrice: number,
+  soldOut: boolean,
+): string {
+  const options = (['length', 'color', 'density', 'lace_type'] as const)
+    .filter((field) => variant?.[field])
+    .map((field) => `${field.replace('_', ' ').replace(/^\w/, (c) => c.toUpperCase())}: ${variant![field]}`);
+
+  const url = `${window.location.origin}/products/${product.slug}`;
+
+  if (soldOut) {
+    return [`Hi Tiuri, is this wig coming back in stock?`, '', product.name, ...options, '', url].join('\n');
+  }
+
+  return [
+    "Hi Tiuri, I'd like to order this wig:",
+    '',
+    product.name,
+    ...options,
+    `Quantity: ${quantity}`,
+    `Total: ${formatPrice(unitPrice * quantity)}`,
+    '',
+    url,
+  ].join('\n');
 }
 
 function groupVariantOptions(variants: ProductVariant[]): Record<string, string[]> {

@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
 import { setDateTime, selectWizard } from '@/store/slices/booking-wizard.slice';
 import { servicesApi } from '@/api/services.api';
 import { BookingStepBar } from '@/components/bookings/BookingStepBar';
+import { formatPrice } from '@/utils/formatters';
 import type { ServiceSlot } from '@/types';
 
 const DAY_HEADERS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -104,7 +105,7 @@ export default function SchedulePage() {
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
           <Link
-            href="/bookings/technician"
+            href="/bookings/services"
             className="w-9 h-9 flex items-center justify-center rounded-full"
             style={{ background: '#fff', border: '1px solid #dedcd7' }}
           >
@@ -116,11 +117,11 @@ export default function SchedulePage() {
         </div>
 
         <div className="mb-5 mt-3">
-          <BookingStepBar currentStep={3} />
+          <BookingStepBar currentStep={2} />
         </div>
 
-        {/* Selected service + technician summary */}
-        {(wizard.service || wizard.technician) && (
+        {/* Selected service summary */}
+        {wizard.service && (
           <div className="card-sku p-4 mb-5 flex items-center gap-3">
             {wizard.service && (
               <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
@@ -138,8 +139,7 @@ export default function SchedulePage() {
                 {wizard.service?.name ?? 'Service'}
               </p>
               <p className="text-xs" style={{ color: '#8b8881' }}>
-                with{' '}
-                {wizard.technician ? wizard.technician.name : 'Any Available Technician'}
+                {wizard.service?.duration_minutes} min · {wizard.service && formatPrice(wizard.service.price)}
               </p>
             </div>
           </div>

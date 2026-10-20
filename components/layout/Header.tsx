@@ -14,6 +14,7 @@ import { cn } from '@/utils/cn';
 const NAV = [
   { label: 'Wigs', href: '/products' },
   { label: 'Services', href: '/services' },
+  { label: 'Prices', href: '/price-list' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];

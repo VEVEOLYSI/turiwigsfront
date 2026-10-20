@@ -66,7 +66,7 @@ export function BookingsTable({ bookings, onBookingUpdated }: BookingsTableProps
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-neutral-100 bg-neutral-50/80">
-            {['Booking #', 'Service', 'Date', 'Time', 'Status', 'Actions'].map((h) => (
+            {['Booking #', 'Customer', 'Service', 'Date', 'Time', 'Status', 'Actions'].map((h) => (
               <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-400">
                 {h}
               </th>
@@ -83,7 +83,25 @@ export function BookingsTable({ bookings, onBookingUpdated }: BookingsTableProps
                 {booking.booking_number}
               </td>
               <td className="px-4 py-3 text-neutral-700">
-                {booking.services?.name ?? '—'}
+                <div className="flex items-center gap-2">
+                  <span>{booking.customer_name || '—'}</span>
+                  {booking.source === 'whatsapp' && (
+                    <span className="rounded-full bg-[#e8f3ec] px-2 py-0.5 text-[10px] font-semibold text-[#167a45]">
+                      WhatsApp
+                    </span>
+                  )}
+                </div>
+                {booking.guest_phone && (
+                  <a
+                    href={`tel:${booking.guest_phone}`}
+                    className="text-xs text-neutral-500 underline underline-offset-2"
+                  >
+                    {booking.guest_phone}
+                  </a>
+                )}
+              </td>
+              <td className="px-4 py-3 text-neutral-700">
+                {booking.services?.name ?? booking.service_name ?? '—'}
               </td>
               <td className="px-4 py-3 text-neutral-500 whitespace-nowrap">
                 {booking.scheduled_date}

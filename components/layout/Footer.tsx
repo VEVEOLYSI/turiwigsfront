@@ -17,6 +17,7 @@ const links = {
   ],
   Salon: [
     { label: 'All services', href: '/services' },
+    { label: 'Price list', href: '/price-list' },
     { label: 'Book an appointment', href: '/bookings' },
     { label: 'Your bookings', href: '/account/bookings' },
     { label: 'Your orders', href: '/account/orders' },

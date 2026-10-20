@@ -20,6 +20,16 @@ export const bookingsApi = {
     balance_amount: number;
   }>>('/bookings', data),
 
+  // No account needed. Holds the time while the customer finishes on WhatsApp.
+  createGuest: (data: {
+    serviceId: string;
+    scheduledDate: string;
+    scheduledTime: string;
+    name: string;
+    phone?: string;
+    notes?: string;
+  }) => client.post<ApiResponse<{ id: string; booking_number: string }>>('/bookings/guest', data),
+
   cancel: (id: string, reason?: string) =>
     client.post(`/bookings/${id}/cancel`, { reason }),
 };

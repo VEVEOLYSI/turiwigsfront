@@ -17,7 +17,7 @@ const CONTACT_INFO = [
   {
     icon: Phone,
     label: 'Phone / WhatsApp',
-    lines: ['+254 700 000 000'],
+    lines: ['+254 748 786 737'],
   },
   {
     icon: Mail,

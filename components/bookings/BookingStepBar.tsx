@@ -3,15 +3,13 @@
 import { Check } from 'lucide-react';
 
 interface BookingStepBarProps {
-  currentStep: 1 | 2 | 3 | 4 | 5;
+  currentStep: 1 | 2 | 3;
 }
 
 const STEPS = [
   { number: 1, label: 'Service' },
-  { number: 2, label: 'Technician' },
-  { number: 3, label: 'Schedule' },
-  { number: 4, label: 'Summary' },
-  { number: 5, label: 'Confirm' },
+  { number: 2, label: 'Date & time' },
+  { number: 3, label: 'Your details' },
 ];
 
 export function BookingStepBar({ currentStep }: BookingStepBarProps) {

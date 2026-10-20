@@ -44,7 +44,7 @@ export function BookingServiceCard({ service, index = 0, onSelect }: BookingServ
       })
     );
     onSelect?.(service);
-    router.push('/bookings/technician');
+    router.push('/bookings/schedule');
   }
 
   return (

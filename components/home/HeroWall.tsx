@@ -174,6 +174,13 @@ function HeroCopy() {
         </Link>
       </div>
 
+      <Link
+        href="/price-list"
+        className="mt-4 inline-flex items-center gap-1.5 self-start text-sm font-semibold text-ink underline decoration-line-2 underline-offset-4 transition-colors hover:decoration-ink"
+      >
+        See our price list <span aria-hidden>→</span>
+      </Link>
+
       <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-mute">
         <span className="inline-flex items-center gap-2">
           <span
